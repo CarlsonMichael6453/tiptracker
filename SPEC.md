@@ -52,6 +52,7 @@ v1 is the close-out notebook: log a real shift in a few taps, keep it forever on
 | Currency other than US dollars | v1.1 | He is paid in dollars. The money fields are built so a later currency symbol is a setting, not a rewrite. |
 | Savings goals | v2 | A goal with money set aside is a different job from logging a shift. It needs its own balance, and it would crowd the close-out form. |
 | Backup to iCloud or Google Drive | v2 | That puts wages and tips on a company’s servers. The file export comes first. Privacy tradeoff is in section 10. |
+| AI theme generator: a prompt in Settings that returns a palette and a polka dot, gradient, or two-tone style | Later, after a backend | It waits until the cloud-backup backend exists, so the model key never ships in the app. Colors and styles only. Section 10. |
 | Cloud-written Insights (a language model rewriting the sentences) | Not planned | The on-device sentences already state the result. Offering a cloud rewrite would send earnings off the phone. The tradeoff is written in section 8 in case he ever wants it anyway. |
 | Accounts, sync, a combined “all profiles” dashboard, overtime, house card fees, scheduling | Not in this product’s current scope | They either move data off the device or answer a question this ledger does not ask. |
 
@@ -1040,6 +1041,17 @@ Optional. Off by default.
 ### iCloud or Google Drive (v2)
 
 A copy of his wages and tips would live on that account. The provider’s terms apply. The account can be breached, shared, or compelled. If this is built, the file should be encrypted with a passphrase before it is uploaded, so the drive holds ciphertext. Metadata (that a backup exists, and when) would still leave the phone. The default stays the v1.1 file he controls. v1 and v1.1 do not link a Google or Apple account inside Tip Tracker.
+
+### AI theme generator (later, after a backend)
+
+Not v1, not v1.1, and not part of the v2 drive backup above. This waits until Tip Tracker has a small backend of its own for cloud backup. Until that server exists, Settings has no prompt box and the app does not call a model.
+
+When it is built, Settings has a box where he describes a vibe, for example “sunset over the ocean.” The app sends that sentence to the backend. The backend returns a palette and one style the app already draws: polka dot, gradient, or two-tone. The phone paints it with the same appearance system as a theme he picked by hand.
+
+- The model’s API key lives only on that backend proxy. It is never in the app, the web export, or the repository.
+- Each person has a rate limit, so a prompt loop cannot run the bill up.
+- The privacy policy and the App Store AI data disclosure are updated before this is offered. The prompt is what leaves the phone. Wages, tips, and shifts are not sent for this feature. This is not the cloud-written Insights rewrite, which stays unplanned because that one would send earnings off the phone.
+- The first version returns colors and a style only. It does not generate images.
 
 ### Savings goals (v2)
 
