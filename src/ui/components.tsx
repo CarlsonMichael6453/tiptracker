@@ -12,7 +12,8 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { addDays, compareCivil, formatWeekdayDate, isCivilDate, WEEKDAY_SHORT } from "../calc/dates";
-import { colorsFor } from "./appearance";
+import { colorsFor, shouldAnimateBackground } from "./appearance";
+import { useBackgroundMotion } from "./useBackgroundMotion";
 import { SceneBackground } from "./SceneBackground";
 import { useTheme } from "./theme";
 
@@ -28,6 +29,13 @@ export function Screen({
   withHeader?: boolean;
 }) {
   const { appearance } = useTheme();
+  const motion = useBackgroundMotion();
+  const animate = shouldAnimateBackground({
+    style: appearance.style,
+    enabled: appearance.animateBackground,
+    reduceMotion: motion.reduceMotion,
+    appVisible: motion.appVisible,
+  });
   const body = scroll ? (
     <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" style={styles.fill}>
       {children}
@@ -40,7 +48,7 @@ export function Screen({
       style={[styles.fill, { backgroundColor: colorsFor(appearance)[0] }]}
       edges={withHeader ? ["left", "right"] : ["top", "left", "right"]}
     >
-      <SceneBackground settings={appearance} />
+      <SceneBackground settings={appearance} animate={animate} />
       {body}
       {footer}
     </SafeAreaView>

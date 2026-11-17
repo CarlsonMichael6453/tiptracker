@@ -10,6 +10,8 @@ export type AppearanceSettings = {
   polka: ColorPair;
   gradient: ColorPair;
   twotone: ColorPair;
+  /** Moves only the backdrop. Off until this profile turns it on. */
+  animateBackground: boolean;
 };
 
 export type TipOutDefault = {
