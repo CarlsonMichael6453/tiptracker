@@ -22,6 +22,34 @@ export default function Root({ children }: PropsWithChildren) {
         <link rel="manifest" href="/tiptracker/manifest.webmanifest" />
         <link rel="apple-touch-icon" href="/tiptracker/icon.png" />
         <link rel="icon" href="/tiptracker/favicon.png" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function () {
+              var build = "tiptracker-build-id";
+              try {
+                if ("serviceWorker" in navigator) {
+                  navigator.serviceWorker.getRegistrations().then(function (regs) {
+                    regs.forEach(function (reg) { reg.unregister(); });
+                  });
+                }
+                if (window.caches && caches.keys) {
+                  caches.keys().then(function (keys) {
+                    keys.forEach(function (key) { caches.delete(key); });
+                  });
+                }
+                var seen = localStorage.getItem("tiptracker.build");
+                if (seen !== build) {
+                  localStorage.setItem("tiptracker.build", build);
+                  var url = new URL(window.location.href);
+                  if (url.searchParams.get("b") !== build) {
+                    url.searchParams.set("b", build);
+                    window.location.replace(url.toString());
+                  }
+                }
+              } catch (e) {}
+            })();`,
+          }}
+        />
         <ScrollViewStyleReset />
       </head>
       <body>{children}</body>

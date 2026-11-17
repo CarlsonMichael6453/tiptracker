@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Animated, Easing, Platform, StyleSheet, useWindowDimensions, View } from "react-native";
 import { colorsFor, gradientStops, type AppearanceSettings } from "./appearance";
+import { isPatternStyle, nativeMotifs, patternMotion, webPaint, type Motif, type PatternStyle } from "./scenePatterns";
 
 const CYCLE_MS = 18000;
 
@@ -20,6 +21,22 @@ const MOTION_CSS = `
   50% { transform: rotate(6deg); }
   100% { transform: rotate(-6deg); }
 }
+@keyframes tiptracker-pan {
+  0%, 100% { background-position: 0 0; }
+  50% { background-position: 18px 10px; }
+}
+@keyframes tiptracker-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(4%, 3%, 0); }
+}
+@keyframes tiptracker-glow {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(2%, 1%, 0) scale(1.08); }
+}
+@keyframes tiptracker-twinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
 `;
 
 let cssReady = false;
@@ -33,12 +50,22 @@ function ensureMotionCss() {
 }
 
 /** Full-screen backdrop. Motion is transform or CSS only, and only on this layer. */
-export function SceneBackground({ settings, animate = false }: { settings: AppearanceSettings; animate?: boolean }) {
+export function SceneBackground({
+  settings,
+  animate = false,
+  preview = false,
+}: {
+  settings: AppearanceSettings;
+  animate?: boolean;
+  preview?: boolean;
+}) {
   const { width, height } = useWindowDimensions();
   const [a, b] = colorsFor(settings);
-  if (settings.style === "gradient") return <Gradient a={a} b={b} animate={animate} />;
-  if (settings.style === "twotone") return <TwoTone a={a} b={b} animate={animate} />;
-  if (settings.style === "polka") return <Polka base={a} dot={b} width={width} height={height} animate={animate} />;
+  const moving = animate && !preview;
+  if (settings.style === "gradient") return <Gradient a={a} b={b} animate={moving} />;
+  if (settings.style === "twotone") return <TwoTone a={a} b={b} animate={moving} />;
+  if (settings.style === "polka") return <Polka base={a} dot={b} width={width} height={height} animate={moving} />;
+  if (isPatternStyle(settings.style)) return <Decor kind={settings.style} a={a} b={b} animate={moving} preview={preview} />;
   return <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: a }]} />;
 }
 
@@ -54,7 +81,7 @@ export function PreviewTile({
   return (
     <View style={{ width, height, borderRadius: 10, overflow: "hidden" }}>
       <View style={{ width, height }}>
-        <SceneBackground settings={settings} />
+        <SceneBackground settings={settings} preview />
       </View>
     </View>
   );
@@ -103,6 +130,113 @@ function useCssMotion(name: string | null, duration: string) {
     };
   }, [name, duration]);
   return ref;
+}
+
+function Decor({
+  kind,
+  a,
+  b,
+  animate,
+  preview,
+}: {
+  kind: PatternStyle;
+  a: string;
+  b: string;
+  animate: boolean;
+  preview: boolean;
+}) {
+  const motion = patternMotion(kind);
+  const paint = webPaint(kind, a, b);
+  const oversized = Boolean(animate && motion?.oversized);
+  const mainName = motion && motion.name !== "tiptracker-twinkle" ? motion.name : null;
+  const ref = useCssMotion(Platform.OS === "web" && animate ? mainName : null, motion?.duration ?? "18s");
+  const twinkleRef = useCssMotion(Platform.OS === "web" && animate && kind === "stars" ? "tiptracker-twinkle" : null, "20s");
+  const swing = useSlowSwing(animate && Platform.OS !== "web");
+  if (Platform.OS === "web") {
+    return (
+      <View pointerEvents="none" style={[StyleSheet.absoluteFill, { overflow: "hidden", backgroundColor: paint.backgroundColor }]}>
+        <View
+          ref={ref}
+          style={
+            {
+              position: "absolute",
+              width: oversized ? "150%" : "100%",
+              height: oversized ? "150%" : "100%",
+              left: oversized ? "-25%" : 0,
+              top: oversized ? "-25%" : 0,
+              backgroundColor: paint.backgroundColor,
+              backgroundImage: paint.backgroundImage,
+              backgroundSize: paint.backgroundSize,
+              backgroundPosition: paint.backgroundPosition,
+              backgroundRepeat: "repeat",
+            } as object
+          }
+        />
+        {paint.twinkle ? (
+          <View
+            ref={twinkleRef}
+            style={
+              {
+                position: "absolute",
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+                backgroundImage: paint.twinkle,
+              } as object
+            }
+          />
+        ) : null}
+      </View>
+    );
+  }
+  const group = nativeMotifs(kind, preview);
+  const translateX = swing.interpolate({ inputRange: [0, 1], outputRange: [0, group.drift] });
+  const translateY = swing.interpolate({ inputRange: [0, 1], outputRange: [0, group.drift * 0.6] });
+  const opacity = swing.interpolate({ inputRange: [0, 1], outputRange: [0.35, 1] });
+  const colors = [a, b];
+  return (
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { overflow: "hidden", backgroundColor: a }]}>
+      <Animated.View
+        style={{
+          position: "absolute",
+          width: "140%",
+          height: "140%",
+          left: "-20%",
+          top: "-20%",
+          transform: group.spin ? [{ rotate: group.spin }, { translateX }, { translateY }] : [{ translateX }, { translateY }],
+        }}
+      >
+        {group.shapes.map((shape, index) => (
+          <MotifView key={index} shape={shape} colors={colors} />
+        ))}
+      </Animated.View>
+      {group.twinkle.length > 0 ? (
+        <Animated.View style={{ position: "absolute", width: "100%", height: "100%", opacity: animate ? opacity : 1 }}>
+          {group.twinkle.map((shape, index) => (
+            <MotifView key={index} shape={shape} colors={colors} />
+          ))}
+        </Animated.View>
+      ) : null}
+    </View>
+  );
+}
+
+function MotifView({ shape, colors }: { shape: Motif; colors: string[] }) {
+  return (
+    <View
+      style={{
+        position: "absolute",
+        left: `${shape.x}%`,
+        top: `${shape.y}%`,
+        width: `${shape.w}%`,
+        height: `${shape.h}%`,
+        borderRadius: shape.round ? 999 : 1,
+        backgroundColor: colors[shape.color],
+        opacity: shape.soft ? 0.9 : 1,
+      }}
+    />
+  );
 }
 
 function Gradient({ a, b, animate }: { a: string; b: string; animate: boolean }) {
