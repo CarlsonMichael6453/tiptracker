@@ -39,7 +39,26 @@ export function defaultAppearance(): AppearanceSettings {
     polka: ["#F4EFE4", "#24301A"],
     gradient: ["#1B2420", "#D4B483"],
     twotone: ["#24301A", "#F3E6C8"],
+    animateBackground: false,
   };
+}
+
+/** Light and Dark have nothing to drift. */
+export function styleCanAnimate(style: AppearanceStyle): boolean {
+  return style === "polka" || style === "gradient" || style === "twotone";
+}
+
+/**
+ * Animation runs only when this profile asked for it, the style has a moving
+ * backdrop, the system is not asking for less motion, and the app is on screen.
+ */
+export function shouldAnimateBackground(args: {
+  style: AppearanceStyle;
+  enabled: boolean;
+  reduceMotion: boolean;
+  appVisible: boolean;
+}): boolean {
+  return args.enabled && args.appVisible && !args.reduceMotion && styleCanAnimate(args.style);
 }
 
 export function colorLabels(style: AppearanceStyle): [string, string] | null {
@@ -59,13 +78,20 @@ export function colorsFor(settings: AppearanceSettings): ColorPair {
 export function parseAppearance(value: unknown): AppearanceSettings {
   const base = defaultAppearance();
   if (!value || typeof value !== "object") return base;
-  const raw = value as { style?: unknown; polka?: unknown; gradient?: unknown; twotone?: unknown };
+  const raw = value as {
+    style?: unknown;
+    polka?: unknown;
+    gradient?: unknown;
+    twotone?: unknown;
+    animateBackground?: unknown;
+  };
   const style = APPEARANCE_STYLES.includes(raw.style as AppearanceStyle) ? (raw.style as AppearanceStyle) : "light";
   return {
     style,
     polka: parsePair(raw.polka, base.polka),
     gradient: parsePair(raw.gradient, base.gradient),
     twotone: parsePair(raw.twotone, base.twotone),
+    animateBackground: raw.animateBackground === true,
   };
 }
 

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 import {
   APPEARANCE_STYLES,
   COLOR_SWATCHES,
   colorLabels,
   colorsFor,
   STYLE_LABELS,
+  styleCanAnimate,
   withPair,
   withStyle,
   type AppearanceSettings,
@@ -62,6 +63,24 @@ export function AppearancePicker({
           <ColorField key={`${value.style}-b`} label={labels[1]} color={pair[1]} onChange={(color) => onChange(withPair(value, [pair[0], color]))} />
         </View>
       ) : null}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 44 }}>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={{ color: palette.text, fontWeight: "700", fontSize: 16 }}>Animate background</Text>
+          {styleCanAnimate(value.style) ? (
+            <Text style={{ color: palette.muted, fontSize: 13 }}>A slow drift of the backdrop only. Cards stay still.</Text>
+          ) : (
+            <Text style={{ color: palette.muted, fontSize: 13 }}>Light and Dark stay still.</Text>
+          )}
+        </View>
+        <Switch
+          accessibilityLabel="Animate background"
+          value={styleCanAnimate(value.style) && value.animateBackground}
+          disabled={!styleCanAnimate(value.style)}
+          onValueChange={(on) => onChange({ ...value, animateBackground: on })}
+          trackColor={{ false: palette.line, true: palette.accent }}
+          thumbColor={palette.card}
+        />
+      </View>
     </View>
   );
 }
