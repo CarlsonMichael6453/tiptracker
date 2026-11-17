@@ -189,7 +189,7 @@ export default function Settings() {
 
       <Card>
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>Appearance</Text>
-        <Muted>Saved on this profile. Swipe the row, then change colors if you want.</Muted>
+        <Muted>Saved on this profile. Every pattern is on this screen. Pick one, then change its colors.</Muted>
         <AppearancePicker
           value={activeProfile.appearance ?? defaultAppearance()}
           onChange={(next) => void saveProfileAppearance(next)}

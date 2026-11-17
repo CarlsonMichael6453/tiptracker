@@ -1,17 +1,23 @@
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
+import { Pressable, Switch, Text, TextInput, useWindowDimensions, View } from "react-native";
 import {
   APPEARANCE_STYLES,
-  COLOR_SWATCHES,
+  COLOR_ROWS,
+  THEME_PRESETS,
+  appearanceContentWidth,
+  applyPreset,
   colorLabels,
   colorsFor,
+  rememberColor,
   STYLE_LABELS,
   styleCanAnimate,
+  themeGrid,
   withPair,
   withStyle,
   type AppearanceSettings,
   type AppearanceStyle,
   type ColorPair,
+  type ThemePreset,
 } from "./appearance";
 import { normalizeHex } from "./contrast";
 import { PreviewTile } from "./SceneBackground";
@@ -25,14 +31,24 @@ export function AppearancePicker({
   onChange: (next: AppearanceSettings) => void;
 }) {
   const { palette } = useTheme();
+  const { width: windowWidth } = useWindowDimensions();
+  const [rowWidth, setRowWidth] = useState(0);
+  const grid = themeGrid(rowWidth || appearanceContentWidth(windowWidth));
   const labels = colorLabels(value.style);
-  const pair = colorsFor(value);
+  const tilePad = 6;
   return (
     <View style={{ gap: 12 }}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
+      <View
+        onLayout={(event) => {
+          const next = Math.floor(event.nativeEvent.layout.width);
+          if (next > 0 && next !== rowWidth) setRowWidth(next);
+        }}
+        style={{ flexDirection: "row", flexWrap: "wrap", gap: grid.gap }}
+      >
         {APPEARANCE_STYLES.map((style) => {
           const selected = value.style === style;
           const preview = withStyle(value, style);
+          const previewWidth = Math.max((grid.tileWidth || 96) - tilePad * 2, 48);
           return (
             <Pressable
               key={style}
@@ -41,28 +57,54 @@ export function AppearancePicker({
               accessibilityState={{ selected }}
               onPress={() => onChange(withStyle(value, style))}
               style={{
-                width: 112,
-                minHeight: 92,
+                width: grid.tileWidth || "31%",
+                minHeight: 72,
                 borderRadius: 16,
-                borderWidth: selected ? 2 : 1,
+                borderWidth: 2,
                 borderColor: selected ? palette.accent : palette.line,
                 backgroundColor: palette.card,
-                padding: 8,
-                gap: 6,
+                padding: tilePad,
+                gap: 4,
               }}
             >
-              <PreviewTile settings={preview} />
-              <Text style={{ color: palette.text, fontWeight: "700", fontSize: 13 }}>{STYLE_LABELS[style]}</Text>
+              <PreviewTile settings={preview} width={previewWidth} height={26} />
+              <Text numberOfLines={2} style={{ color: palette.text, fontWeight: "700", fontSize: 12 }}>
+                {style === "checker" ? "Checker\nboard" : STYLE_LABELS[style]}
+              </Text>
             </Pressable>
           );
         })}
-      </ScrollView>
-      {labels ? (
-        <View style={{ gap: 10 }}>
-          <ColorField key={`${value.style}-a`} label={labels[0]} color={pair[0]} onChange={(color) => onChange(withPair(value, [color, pair[1]]))} />
-          <ColorField key={`${value.style}-b`} label={labels[1]} color={pair[1]} onChange={(color) => onChange(withPair(value, [pair[0], color]))} />
-        </View>
-      ) : null}
+      </View>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        {THEME_PRESETS.map((preset) => {
+          const selected = presetMatches(value, preset);
+          return (
+            <Pressable
+              key={preset.id}
+              accessibilityRole="button"
+              accessibilityLabel={preset.label}
+              accessibilityState={{ selected }}
+              onPress={() => onChange(applyPreset(value, preset))}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                minHeight: 44,
+                paddingHorizontal: 8,
+                paddingVertical: 6,
+                borderRadius: 14,
+                borderWidth: 2,
+                borderColor: selected ? palette.accent : palette.line,
+                backgroundColor: palette.card,
+              }}
+            >
+              <PreviewTile settings={withPair(withStyle(value, preset.style), preset.pair)} width={28} height={28} />
+              <Text style={{ color: palette.text, fontWeight: "700", fontSize: 13 }}>{preset.label}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      {labels ? <ColorEditor value={value} labels={labels} onChange={onChange} /> : null}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 44 }}>
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={{ color: palette.text, fontWeight: "700", fontSize: 16 }}>Animate background</Text>
@@ -85,48 +127,110 @@ export function AppearancePicker({
   );
 }
 
-function ColorField({ label, color, onChange }: { label: string; color: string; onChange: (color: string) => void }) {
+function presetMatches(value: AppearanceSettings, preset: ThemePreset): boolean {
+  if (value.style !== preset.style) return false;
+  const pair = colorsFor(value);
+  return pair[0].toUpperCase() === preset.pair[0].toUpperCase() && pair[1].toUpperCase() === preset.pair[1].toUpperCase();
+}
+
+function ColorEditor({
+  value,
+  labels,
+  onChange,
+}: {
+  value: AppearanceSettings;
+  labels: [string, string];
+  onChange: (next: AppearanceSettings) => void;
+}) {
   const { palette } = useTheme();
-  const [draft, setDraft] = useState(color);
-  useEffect(() => setDraft(color), [color]);
+  const pair = colorsFor(value);
+  const [slot, setSlot] = useState<0 | 1>(0);
+  const active = pair[slot];
+  const [draft, setDraft] = useState(active);
+  useEffect(() => setDraft(active), [active]);
+
+  const paint = (color: string, remember: boolean) => {
+    const nextPair: ColorPair = slot === 0 ? [color, pair[1]] : [pair[0], color];
+    const painted = withPair(value, nextPair);
+    onChange(remember ? rememberColor(painted, color) : painted);
+  };
+
   return (
-    <View style={{ gap: 8 }}>
-      <Text style={{ color: palette.muted, fontWeight: "600" }}>{label}</Text>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-        {COLOR_SWATCHES.map((swatch) => {
-          const selected = swatch.toUpperCase() === color.toUpperCase();
+    <View style={{ gap: 10 }}>
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        {labels.map((label, index) => {
+          const selected = slot === index;
           return (
             <Pressable
-              key={swatch}
+              key={label}
               accessibilityRole="button"
-              accessibilityLabel={swatch}
-              onPress={() => {
-                setDraft(swatch);
-                onChange(swatch);
-              }}
+              accessibilityLabel={label}
+              accessibilityState={{ selected }}
+              onPress={() => setSlot(index as 0 | 1)}
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                backgroundColor: swatch,
-                borderWidth: selected ? 3 : 1,
+                flex: 1,
+                minHeight: 44,
+                borderRadius: 12,
+                borderWidth: 2,
                 borderColor: selected ? palette.accent : palette.line,
+                backgroundColor: palette.card,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                paddingHorizontal: 10,
               }}
-            />
+            >
+              <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: pair[index], borderWidth: 1, borderColor: palette.line }} />
+              <Text style={{ color: palette.text, fontWeight: "700", fontSize: 13 }}>{label}</Text>
+            </Pressable>
           );
         })}
       </View>
+      {value.recent.length > 0 ? (
+        <View style={{ gap: 6 }}>
+          <Text style={{ color: palette.muted, fontSize: 12, fontWeight: "600" }}>Recent colors</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {value.recent.map((swatch) => (
+              <Swatch
+                key={swatch}
+                color={swatch}
+                selected={swatch.toUpperCase() === active.toUpperCase()}
+                label={`Recent ${swatch}`}
+                onPress={() => paint(swatch, true)}
+              />
+            ))}
+          </View>
+        </View>
+      ) : null}
+      {COLOR_ROWS.map((row) => (
+        <View key={row.name} style={{ gap: 6 }}>
+          <Text style={{ color: palette.muted, fontSize: 12, fontWeight: "600" }}>{row.name}</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {row.colors.map((swatch) => (
+              <Swatch
+                key={swatch}
+                color={swatch}
+                selected={swatch.toUpperCase() === active.toUpperCase()}
+                label={`${row.name} ${swatch}`}
+                onPress={() => paint(swatch, true)}
+              />
+            ))}
+          </View>
+        </View>
+      ))}
       <TextInput
         value={draft}
         onChangeText={(text) => {
           setDraft(text);
           const next = normalizeHex(text);
-          if (next) onChange(next);
+          if (!next) return;
+          paint(next, text.trim().length >= 7);
         }}
         autoCapitalize="characters"
         autoCorrect={false}
         placeholder="#24301A"
         placeholderTextColor={palette.faint}
+        accessibilityLabel="Hex color"
         style={{
           minHeight: 44,
           borderWidth: 1,
@@ -139,6 +243,26 @@ function ColorField({ label, color, onChange }: { label: string; color: string; 
         }}
       />
     </View>
+  );
+}
+
+function Swatch({ color, selected, label, onPress }: { color: string; selected: boolean; label: string; onPress: () => void }) {
+  const { palette } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: color,
+        borderWidth: selected ? 3 : 1,
+        borderColor: selected ? palette.accent : palette.line,
+      }}
+    />
   );
 }
 

@@ -3,16 +3,30 @@ import type { HoursMode, Settlement, TipOutKind, TipShareMode, TipsMode } from "
 
 export type Posture = "tips_out" | "receives_share" | "both";
 export type Appearance = "system" | "light" | "dark";
-export type AppearanceStyle = "light" | "dark" | "polka" | "gradient" | "twotone";
+export type AppearanceStyle =
+  | "light"
+  | "dark"
+  | "polka"
+  | "gradient"
+  | "twotone"
+  | "stripes"
+  | "waves"
+  | "checker"
+  | "confetti"
+  | "radial"
+  | "stars"
+  | "bokeh"
+  | "plaid"
+  | "mesh";
+export type DecorativeStyle = Exclude<AppearanceStyle, "light" | "dark">;
 export type ColorPair = [string, string];
 export type AppearanceSettings = {
   style: AppearanceStyle;
-  polka: ColorPair;
-  gradient: ColorPair;
-  twotone: ColorPair;
+  /** Colors this profile picked, newest first. Capped. */
+  recent: string[];
   /** Moves only the backdrop. Off until this profile turns it on. */
   animateBackground: boolean;
-};
+} & Record<DecorativeStyle, ColorPair>;
 
 export type TipOutDefault = {
   id: string;
