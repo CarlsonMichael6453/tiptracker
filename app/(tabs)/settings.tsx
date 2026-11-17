@@ -14,11 +14,13 @@ import {
   updateProfile,
 } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
-import { Button, Card, ErrorList, Field, Muted, Screen, Segment, Title, WeekStartPicker } from "../../src/ui/components";
+import { AppearancePicker } from "../../src/ui/AppearancePicker";
+import { defaultAppearance } from "../../src/ui/appearance";
+import { Button, Card, ErrorList, Field, Muted, Screen, Title, WeekStartPicker } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
 
 export default function Settings() {
-  const { db, activeProfile, profiles, appearance, reload, setActive, updateAppearance } = useApp();
+  const { db, activeProfile, profiles, reload, setActive, saveProfileAppearance } = useApp();
   const { palette } = useTheme();
   const [roles, setRoles] = useState<Role[]>([]);
   const [name, setName] = useState("");
@@ -187,14 +189,10 @@ export default function Settings() {
 
       <Card>
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>Appearance</Text>
-        <Segment
-          value={appearance}
-          onChange={(value) => void updateAppearance(value)}
-          options={[
-            { value: "system", label: "System" },
-            { value: "light", label: "Light" },
-            { value: "dark", label: "Dark" },
-          ]}
+        <Muted>Saved on this profile. Swipe the row, then change colors if you want.</Muted>
+        <AppearancePicker
+          value={activeProfile.appearance ?? defaultAppearance()}
+          onChange={(next) => void saveProfileAppearance(next)}
         />
       </Card>
 

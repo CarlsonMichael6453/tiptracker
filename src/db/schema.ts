@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS profile (
   lunch_cutoff_minutes INTEGER NOT NULL CHECK (lunch_cutoff_minutes BETWEEN 0 AND 1439),
   double_threshold_minutes INTEGER NOT NULL CHECK (double_threshold_minutes BETWEEN 360 AND 720),
   last_role_id TEXT,
+  appearance_json TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );

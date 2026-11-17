@@ -3,6 +3,14 @@ import type { HoursMode, Settlement, TipOutKind, TipShareMode, TipsMode } from "
 
 export type Posture = "tips_out" | "receives_share" | "both";
 export type Appearance = "system" | "light" | "dark";
+export type AppearanceStyle = "light" | "dark" | "polka" | "gradient" | "twotone";
+export type ColorPair = [string, string];
+export type AppearanceSettings = {
+  style: AppearanceStyle;
+  polka: ColorPair;
+  gradient: ColorPair;
+  twotone: ColorPair;
+};
 
 export type TipOutDefault = {
   id: string;
@@ -32,6 +40,7 @@ export type Profile = {
   lunchCutoffMinutes: number;
   doubleThresholdMinutes: number;
   lastRoleId: string | null;
+  appearance: AppearanceSettings;
   createdAt: string;
   updatedAt: string;
 };

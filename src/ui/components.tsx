@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { addDays, compareCivil, formatWeekdayDate, isCivilDate, WEEKDAY_SHORT } from "../calc/dates";
+import { colorsFor } from "./appearance";
+import { SceneBackground } from "./SceneBackground";
 import { useTheme } from "./theme";
 
 export function Screen({
@@ -25,9 +27,9 @@ export function Screen({
   scroll?: boolean;
   withHeader?: boolean;
 }) {
-  const { palette } = useTheme();
+  const { appearance } = useTheme();
   const body = scroll ? (
-    <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" style={styles.fill}>
       {children}
     </ScrollView>
   ) : (
@@ -35,9 +37,10 @@ export function Screen({
   );
   return (
     <SafeAreaView
-      style={[styles.fill, { backgroundColor: palette.bg }]}
+      style={[styles.fill, { backgroundColor: colorsFor(appearance)[0] }]}
       edges={withHeader ? ["left", "right"] : ["top", "left", "right"]}
     >
+      <SceneBackground settings={appearance} />
       {body}
       {footer}
     </SafeAreaView>
@@ -45,13 +48,41 @@ export function Screen({
 }
 
 export function Title({ children }: { children: ReactNode }) {
-  const { palette } = useTheme();
-  return <Text style={[styles.title, { color: palette.text }]}>{children}</Text>;
+  const { palette, decorative } = useTheme();
+  return (
+    <Text
+      style={[
+        styles.title,
+        {
+          color: palette.text,
+          backgroundColor: decorative ? palette.card : "transparent",
+          alignSelf: "flex-start",
+          paddingHorizontal: decorative ? 10 : 0,
+          borderRadius: decorative ? 10 : 0,
+        },
+      ]}
+    >
+      {children}
+    </Text>
+  );
 }
 
 export function Muted({ children, style }: { children: ReactNode; style?: TextStyle }) {
-  const { palette } = useTheme();
-  return <Text style={[styles.muted, { color: palette.muted }, style]}>{children}</Text>;
+  const { palette, decorative } = useTheme();
+  return (
+    <Text
+      style={[
+        styles.muted,
+        { color: palette.muted },
+        decorative
+          ? { backgroundColor: palette.card, alignSelf: "flex-start", paddingHorizontal: 6, borderRadius: 6 }
+          : null,
+        style,
+      ]}
+    >
+      {children}
+    </Text>
+  );
 }
 
 export function Card({ children, style }: { children: ReactNode; style?: ViewStyle }) {
@@ -72,7 +103,7 @@ export function Button({
 }) {
   const { palette } = useTheme();
   const background =
-    kind === "primary" ? palette.primary : kind === "danger" ? "transparent" : kind === "secondary" ? palette.cardAlt : "transparent";
+    kind === "primary" ? palette.primary : kind === "danger" ? palette.card : kind === "secondary" ? palette.cardAlt : palette.cardAlt;
   const color = kind === "primary" ? palette.onPrimary : kind === "danger" ? palette.danger : palette.text;
   const borderColor = kind === "danger" ? palette.danger : kind === "secondary" ? palette.line : "transparent";
   return (

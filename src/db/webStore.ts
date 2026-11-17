@@ -1,3 +1,4 @@
+import { parseAppearance } from "../ui/appearance";
 import { emptyWebState, type WebDatabase, type WebState } from "./types";
 
 const IDB_NAME = "tiptracker";
@@ -74,7 +75,7 @@ function parseState(json: string): WebState {
     return emptyWebState();
   }
   return {
-    profiles: data.profiles,
+    profiles: data.profiles.map((profile) => ({ ...profile, appearance: parseAppearance(profile.appearance) })),
     roles: data.roles,
     shifts: data.shifts,
     kv: data.kv && typeof data.kv === "object" ? data.kv : {},

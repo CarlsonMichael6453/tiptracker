@@ -17,9 +17,9 @@ export default function RootLayout() {
 }
 
 function Gate() {
-  const { ready, bootError, appearance } = useApp();
+  const { ready, bootError } = useApp();
   return (
-    <ThemeProvider appearance={appearance}>
+    <ThemeProvider>
       {bootError ? <BootError message={bootError} /> : ready ? <Navigation /> : <BootError message="Opening your shifts…" />}
     </ThemeProvider>
   );
@@ -32,11 +32,11 @@ function Navigation() {
       <StatusBar style={scheme === "dark" ? "light" : "dark"} />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: palette.bg },
+          headerStyle: { backgroundColor: palette.card },
           headerTintColor: palette.text,
           headerTitleStyle: { fontWeight: "700" },
           headerShadowVisible: false,
-          contentStyle: { backgroundColor: palette.bg },
+          contentStyle: { backgroundColor: "transparent" },
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
