@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { openDatabase } from "../db/database";
 import type { AppDatabase } from "../db/types";
-import type { Appearance, Profile } from "../domain/types";
+import type { Appearance, AppearanceSettings, Profile } from "../domain/types";
 import {
   getActiveProfileId,
   getAppearance,
@@ -9,6 +9,7 @@ import {
   listProfiles,
   setActiveProfileId,
   setAppearance as saveAppearance,
+  updateProfile,
 } from "../repo/repository";
 
 type AppContextValue = {
@@ -21,6 +22,7 @@ type AppContextValue = {
   reload: () => Promise<void>;
   setActive: (id: string) => Promise<void>;
   updateAppearance: (value: Appearance) => Promise<void>;
+  saveProfileAppearance: (value: AppearanceSettings) => Promise<void>;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -102,9 +104,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [db],
   );
 
+  const saveProfileAppearance = useCallback(
+    async (value: AppearanceSettings) => {
+      if (!db || !activeProfile) return;
+      const next = { ...activeProfile, appearance: value };
+      setActiveProfile(next);
+      setProfiles((list) => list.map((profile) => (profile.id === next.id ? next : profile)));
+      await updateProfile(db, next.id, { appearance: value });
+    },
+    [db, activeProfile],
+  );
+
   const value = useMemo(
-    () => ({ ready, bootError, db, profiles, activeProfile, appearance, reload, setActive, updateAppearance }),
-    [ready, bootError, db, profiles, activeProfile, appearance, reload, setActive, updateAppearance],
+    () => ({ ready, bootError, db, profiles, activeProfile, appearance, reload, setActive, updateAppearance, saveProfileAppearance }),
+    [ready, bootError, db, profiles, activeProfile, appearance, reload, setActive, updateAppearance, saveProfileAppearance],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

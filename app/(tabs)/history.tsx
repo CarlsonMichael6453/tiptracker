@@ -41,14 +41,14 @@ export default function History() {
         contentContainerStyle={{ padding: 20, paddingBottom: 32 }}
         ListEmptyComponent={<Muted>No shifts yet.</Muted>}
         renderSectionHeader={({ section }) => (
-          <Text style={{ color: palette.faint, fontSize: 13, fontWeight: "700", marginTop: 16, marginBottom: 8 }}>{section.title}</Text>
+          <Text style={{ color: palette.text, backgroundColor: palette.card, alignSelf: "flex-start", overflow: "hidden", fontSize: 13, fontWeight: "700", marginTop: 8, marginBottom: 8, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>{section.title}</Text>
         )}
         renderItem={({ item }) => (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`${formatWeekdayDate(item.shiftDate)} ${item.roleName}`}
             onPress={() => router.push(`/shift/${item.id}`)}
-            style={{ minHeight: 64, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: palette.line, justifyContent: "center" }}
+            style={{ minHeight: 64, padding: 12, marginBottom: 8, borderRadius: 14, backgroundColor: palette.card, borderWidth: 1, borderColor: palette.line, justifyContent: "center" }}
           >
             <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
               <Text style={{ color: palette.text, fontSize: 16, fontWeight: "700", flex: 1 }}>

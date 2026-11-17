@@ -2,6 +2,7 @@ import type { SQLiteDatabase } from "expo-sqlite";
 import { DEFAULT_DOUBLE_THRESHOLD_MINUTES, DEFAULT_LUNCH_CUTOFF_MINUTES } from "../calc/classify";
 import type { Meal } from "../calc/classify";
 import type { ShiftSnapshot, TipOutKind } from "../calc/shift";
+import { defaultAppearance, parseAppearance } from "../ui/appearance";
 import { nowIso } from "../db/time";
 import { isWebDatabase, type AppDatabase } from "../db/types";
 import * as webDb from "./webRepository";
@@ -47,8 +48,8 @@ export async function createProfile(
   if (isWebDatabase(db)) return webDb.createProfile(db, input);
   await db.withTransactionAsync(async () => {
     await db.runAsync(
-      `INSERT INTO profile (id, name, default_wage_cents, week_starts_on, lunch_cutoff_minutes, double_threshold_minutes, last_role_id, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO profile (id, name, default_wage_cents, week_starts_on, lunch_cutoff_minutes, double_threshold_minutes, last_role_id, appearance_json, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       id,
       input.name.trim(),
       input.wageCents,
@@ -56,6 +57,7 @@ export async function createProfile(
       DEFAULT_LUNCH_CUTOFF_MINUTES,
       DEFAULT_DOUBLE_THRESHOLD_MINUTES,
       roleIds[usualIndex],
+      JSON.stringify(defaultAppearance()),
       created,
       created,
     );
@@ -87,7 +89,7 @@ export async function createProfile(
 export async function updateProfile(
   db: AppDatabase,
   id: string,
-  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes">>,
+  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes" | "appearance">>,
 ): Promise<void> {
   if (isWebDatabase(db)) return webDb.updateProfile(db, id, patch);
   const current = await getProfile(db, id);
@@ -98,14 +100,16 @@ export async function updateProfile(
     weekStartsOn: patch.weekStartsOn ?? current.weekStartsOn,
     lunchCutoffMinutes: patch.lunchCutoffMinutes ?? current.lunchCutoffMinutes,
     doubleThresholdMinutes: patch.doubleThresholdMinutes ?? current.doubleThresholdMinutes,
+    appearance: patch.appearance ?? current.appearance,
   };
   await db.runAsync(
-    `UPDATE profile SET name = ?, default_wage_cents = ?, week_starts_on = ?, lunch_cutoff_minutes = ?, double_threshold_minutes = ?, updated_at = ? WHERE id = ?`,
+    `UPDATE profile SET name = ?, default_wage_cents = ?, week_starts_on = ?, lunch_cutoff_minutes = ?, double_threshold_minutes = ?, appearance_json = ?, updated_at = ? WHERE id = ?`,
     next.name,
     next.defaultWageCents,
     next.weekStartsOn,
     next.lunchCutoffMinutes,
     next.doubleThresholdMinutes,
+    JSON.stringify(next.appearance),
     nowIso(),
     id,
   );
@@ -533,6 +537,7 @@ type ProfileRow = {
   lunch_cutoff_minutes: number;
   double_threshold_minutes: number;
   last_role_id: string | null;
+  appearance_json: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -609,6 +614,15 @@ type TipShareLineRow = {
   sort_order: number;
 };
 
+function parseJson(value: string | null): unknown {
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
 function mapProfile(row: ProfileRow): Profile {
   return {
     id: row.id,
@@ -618,6 +632,7 @@ function mapProfile(row: ProfileRow): Profile {
     lunchCutoffMinutes: row.lunch_cutoff_minutes,
     doubleThresholdMinutes: row.double_threshold_minutes,
     lastRoleId: row.last_role_id,
+    appearance: parseAppearance(parseJson(row.appearance_json)),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

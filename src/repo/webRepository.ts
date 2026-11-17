@@ -1,4 +1,5 @@
 import { DEFAULT_DOUBLE_THRESHOLD_MINUTES, DEFAULT_LUNCH_CUTOFF_MINUTES } from "../calc/classify";
+import { defaultAppearance } from "../ui/appearance";
 import { nowIso } from "../db/time";
 import type { WebDatabase, WebState } from "../db/types";
 import type { Appearance, Posture, Profile, Role, ShiftRecord, TipOutDefault } from "../domain/types";
@@ -63,6 +64,7 @@ export function createProfile(
       lunchCutoffMinutes: DEFAULT_LUNCH_CUTOFF_MINUTES,
       doubleThresholdMinutes: DEFAULT_DOUBLE_THRESHOLD_MINUTES,
       lastRoleId: roles[usualIndex]?.id ?? roles[0]?.id ?? null,
+      appearance: defaultAppearance(),
       createdAt: created,
       updatedAt: created,
     });
@@ -75,7 +77,7 @@ export function createProfile(
 export function updateProfile(
   db: WebDatabase,
   id: string,
-  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes">>,
+  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes" | "appearance">>,
 ): Promise<void> {
   return db.update((state) => {
     const current = state.profiles.find((profile) => profile.id === id);
@@ -85,6 +87,7 @@ export function updateProfile(
     if (patch.weekStartsOn != null) current.weekStartsOn = patch.weekStartsOn;
     if (patch.lunchCutoffMinutes != null) current.lunchCutoffMinutes = patch.lunchCutoffMinutes;
     if (patch.doubleThresholdMinutes != null) current.doubleThresholdMinutes = patch.doubleThresholdMinutes;
+    if (patch.appearance != null) current.appearance = patch.appearance;
     current.updatedAt = nowIso();
   });
 }
