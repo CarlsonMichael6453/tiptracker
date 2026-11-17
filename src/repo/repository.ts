@@ -2,7 +2,9 @@ import type { SQLiteDatabase } from "expo-sqlite";
 import { DEFAULT_DOUBLE_THRESHOLD_MINUTES, DEFAULT_LUNCH_CUTOFF_MINUTES } from "../calc/classify";
 import type { Meal } from "../calc/classify";
 import type { ShiftSnapshot, TipOutKind } from "../calc/shift";
-import { nowIso } from "../db/database";
+import { nowIso } from "../db/time";
+import { isWebDatabase, type AppDatabase } from "../db/types";
+import * as webDb from "./webRepository";
 import type {
   Appearance,
   Posture,
@@ -22,24 +24,27 @@ const STARTERS: { name: string; posture: Posture }[] = [
   { name: "Host", posture: "receives_share" },
 ];
 
-export async function listProfiles(db: SQLiteDatabase): Promise<Profile[]> {
+export async function listProfiles(db: AppDatabase): Promise<Profile[]> {
+  if (isWebDatabase(db)) return webDb.listProfiles(db);
   const rows = await db.getAllAsync<ProfileRow>("SELECT * FROM profile ORDER BY created_at ASC");
   return rows.map(mapProfile);
 }
 
-export async function getProfile(db: SQLiteDatabase, id: string): Promise<Profile | null> {
+export async function getProfile(db: AppDatabase, id: string): Promise<Profile | null> {
+  if (isWebDatabase(db)) return webDb.getProfile(db, id);
   const row = await db.getFirstAsync<ProfileRow>("SELECT * FROM profile WHERE id = ?", id);
   return row ? mapProfile(row) : null;
 }
 
 export async function createProfile(
-  db: SQLiteDatabase,
+  db: AppDatabase,
   input: { name: string; wageCents: number; weekStartsOn: number; usualRoleName: string },
 ): Promise<string> {
   const id = newId();
   const created = nowIso();
   const roleIds = STARTERS.map(() => newId());
   const usualIndex = Math.max(0, STARTERS.findIndex((role) => role.name === input.usualRoleName));
+  if (isWebDatabase(db)) return webDb.createProfile(db, input);
   await db.withTransactionAsync(async () => {
     await db.runAsync(
       `INSERT INTO profile (id, name, default_wage_cents, week_starts_on, lunch_cutoff_minutes, double_threshold_minutes, last_role_id, created_at, updated_at)
@@ -80,10 +85,11 @@ export async function createProfile(
 }
 
 export async function updateProfile(
-  db: SQLiteDatabase,
+  db: AppDatabase,
   id: string,
   patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes">>,
 ): Promise<void> {
+  if (isWebDatabase(db)) return webDb.updateProfile(db, id, patch);
   const current = await getProfile(db, id);
   if (!current) throw new Error("That profile is gone.");
   const next = {
@@ -105,7 +111,8 @@ export async function updateProfile(
   );
 }
 
-export async function deleteProfile(db: SQLiteDatabase, id: string): Promise<void> {
+export async function deleteProfile(db: AppDatabase, id: string): Promise<void> {
+  if (isWebDatabase(db)) return webDb.deleteProfile(db, id);
   await db.withTransactionAsync(async () => {
     await db.runAsync("DELETE FROM profile WHERE id = ?", id);
     const active = await getKv(db, "active_profile_id");
@@ -117,29 +124,34 @@ export async function deleteProfile(db: SQLiteDatabase, id: string): Promise<voi
   });
 }
 
-export async function deleteAllShifts(db: SQLiteDatabase, profileId: string): Promise<void> {
+export async function deleteAllShifts(db: AppDatabase, profileId: string): Promise<void> {
+  if (isWebDatabase(db)) return webDb.deleteAllShifts(db, profileId);
   await db.runAsync("DELETE FROM shift WHERE profile_id = ?", profileId);
 }
 
-export async function deleteAllData(db: SQLiteDatabase): Promise<void> {
+export async function deleteAllData(db: AppDatabase): Promise<void> {
+  if (isWebDatabase(db)) return webDb.deleteAllData(db);
   await db.withTransactionAsync(async () => {
     await db.runAsync("DELETE FROM profile");
     await db.runAsync("DELETE FROM app_kv WHERE key = ?", "active_profile_id");
   });
 }
 
-export async function countShifts(db: SQLiteDatabase, profileId: string): Promise<number> {
+export async function countShifts(db: AppDatabase, profileId: string): Promise<number> {
+  if (isWebDatabase(db)) return webDb.countShifts(db, profileId);
   const row = await db.getFirstAsync<{ n: number }>("SELECT COUNT(*) AS n FROM shift WHERE profile_id = ?", profileId);
   return row?.n ?? 0;
 }
 
-export async function countAll(db: SQLiteDatabase): Promise<{ profiles: number; shifts: number }> {
+export async function countAll(db: AppDatabase): Promise<{ profiles: number; shifts: number }> {
+  if (isWebDatabase(db)) return webDb.countAll(db);
   const profiles = await db.getFirstAsync<{ n: number }>("SELECT COUNT(*) AS n FROM profile");
   const shifts = await db.getFirstAsync<{ n: number }>("SELECT COUNT(*) AS n FROM shift");
   return { profiles: profiles?.n ?? 0, shifts: shifts?.n ?? 0 };
 }
 
-export async function listRoles(db: SQLiteDatabase, profileId: string): Promise<Role[]> {
+export async function listRoles(db: AppDatabase, profileId: string): Promise<Role[]> {
+  if (isWebDatabase(db)) return webDb.listRoles(db, profileId);
   const rows = await db.getAllAsync<RoleRow>(
     "SELECT * FROM role WHERE profile_id = ? ORDER BY sort_order ASC, created_at ASC",
     profileId,
@@ -155,7 +167,8 @@ export async function listRoles(db: SQLiteDatabase, profileId: string): Promise<
   return rows.map((row) => mapRole(row, defaults.filter((line) => line.role_id === row.id)));
 }
 
-export async function getRole(db: SQLiteDatabase, id: string): Promise<Role | null> {
+export async function getRole(db: AppDatabase, id: string): Promise<Role | null> {
+  if (isWebDatabase(db)) return webDb.getRole(db, id);
   const row = await db.getFirstAsync<RoleRow>("SELECT * FROM role WHERE id = ?", id);
   if (!row) return null;
   const defaults = await db.getAllAsync<TipOutDefaultRow>(
@@ -173,7 +186,7 @@ export type RoleTipOutWrite = {
 };
 
 export async function createRole(
-  db: SQLiteDatabase,
+  db: AppDatabase,
   input: {
     profileId: string;
     name: string;
@@ -183,6 +196,7 @@ export async function createRole(
     tipOutDefaults: RoleTipOutWrite[];
   },
 ): Promise<string> {
+  if (isWebDatabase(db)) return webDb.createRole(db, input);
   const id = newId();
   const created = nowIso();
   const orderRow = await db.getFirstAsync<{ n: number }>(
@@ -209,7 +223,7 @@ export async function createRole(
 }
 
 export async function updateRole(
-  db: SQLiteDatabase,
+  db: AppDatabase,
   id: string,
   input: {
     name: string;
@@ -219,6 +233,7 @@ export async function updateRole(
     tipOutDefaults: RoleTipOutWrite[];
   },
 ): Promise<void> {
+  if (isWebDatabase(db)) return webDb.updateRole(db, id, input);
   await db.withTransactionAsync(async () => {
     await db.runAsync(
       `UPDATE role SET name = ?, posture = ?, default_wage_cents = ?, tip_out_settlement = ?, updated_at = ? WHERE id = ?`,
@@ -233,7 +248,8 @@ export async function updateRole(
   });
 }
 
-export async function deleteRole(db: SQLiteDatabase, id: string): Promise<void> {
+export async function deleteRole(db: AppDatabase, id: string): Promise<void> {
+  if (isWebDatabase(db)) return webDb.deleteRole(db, id);
   const role = await getRole(db, id);
   if (!role) return;
   const count = await db.getFirstAsync<{ n: number }>("SELECT COUNT(*) AS n FROM role WHERE profile_id = ?", role.profileId);
@@ -244,7 +260,8 @@ export async function deleteRole(db: SQLiteDatabase, id: string): Promise<void> 
   });
 }
 
-export async function reorderRoles(db: SQLiteDatabase, orderedIds: string[]): Promise<void> {
+export async function reorderRoles(db: AppDatabase, orderedIds: string[]): Promise<void> {
+  if (isWebDatabase(db)) return webDb.reorderRoles(db, orderedIds);
   await db.withTransactionAsync(async () => {
     for (let i = 0; i < orderedIds.length; i += 1) {
       await db.runAsync("UPDATE role SET sort_order = ?, updated_at = ? WHERE id = ?", i, nowIso(), orderedIds[i]);
@@ -252,21 +269,25 @@ export async function reorderRoles(db: SQLiteDatabase, orderedIds: string[]): Pr
   });
 }
 
-export async function getActiveProfileId(db: SQLiteDatabase): Promise<string | null> {
+export async function getActiveProfileId(db: AppDatabase): Promise<string | null> {
+  if (isWebDatabase(db)) return webDb.getActiveProfileId(db);
   return getKv(db, "active_profile_id");
 }
 
-export async function setActiveProfileId(db: SQLiteDatabase, id: string): Promise<void> {
+export async function setActiveProfileId(db: AppDatabase, id: string): Promise<void> {
+  if (isWebDatabase(db)) return webDb.setActiveProfileId(db, id);
   await setKv(db, "active_profile_id", id);
 }
 
-export async function getAppearance(db: SQLiteDatabase): Promise<Appearance> {
+export async function getAppearance(db: AppDatabase): Promise<Appearance> {
+  if (isWebDatabase(db)) return webDb.getAppearance(db);
   const value = await getKv(db, "appearance");
   if (value === "light" || value === "dark" || value === "system") return value;
   return "system";
 }
 
-export async function setAppearance(db: SQLiteDatabase, appearance: Appearance): Promise<void> {
+export async function setAppearance(db: AppDatabase, appearance: Appearance): Promise<void> {
+  if (isWebDatabase(db)) return webDb.setAppearance(db, appearance);
   await setKv(db, "appearance", appearance);
 }
 
@@ -296,7 +317,8 @@ export type ShiftWrite = {
   tipShareLines: { label: string | null; amountCents: number }[];
 };
 
-export async function saveNewShift(db: SQLiteDatabase, input: ShiftWrite): Promise<string> {
+export async function saveNewShift(db: AppDatabase, input: ShiftWrite): Promise<string> {
+  if (isWebDatabase(db)) return webDb.saveNewShift(db, input);
   const id = newId();
   const created = nowIso();
   await db.withTransactionAsync(async () => {
@@ -307,7 +329,8 @@ export async function saveNewShift(db: SQLiteDatabase, input: ShiftWrite): Promi
   return id;
 }
 
-export async function updateShift(db: SQLiteDatabase, id: string, input: ShiftWrite): Promise<void> {
+export async function updateShift(db: AppDatabase, id: string, input: ShiftWrite): Promise<void> {
+  if (isWebDatabase(db)) return webDb.updateShift(db, id, input);
   const existing = await db.getFirstAsync<{ created_at: string }>("SELECT created_at FROM shift WHERE id = ?", id);
   if (!existing) throw new Error("That shift is gone.");
   const updated = nowIso();
@@ -321,11 +344,13 @@ export async function updateShift(db: SQLiteDatabase, id: string, input: ShiftWr
   });
 }
 
-export async function deleteShift(db: SQLiteDatabase, id: string): Promise<void> {
+export async function deleteShift(db: AppDatabase, id: string): Promise<void> {
+  if (isWebDatabase(db)) return webDb.deleteShift(db, id);
   await db.runAsync("DELETE FROM shift WHERE id = ?", id);
 }
 
-export async function getShift(db: SQLiteDatabase, id: string): Promise<ShiftRecord | null> {
+export async function getShift(db: AppDatabase, id: string): Promise<ShiftRecord | null> {
+  if (isWebDatabase(db)) return webDb.getShift(db, id);
   const row = await db.getFirstAsync<ShiftRow>("SELECT * FROM shift WHERE id = ?", id);
   if (!row) return null;
   const [tipOut, tipShare] = await Promise.all([
@@ -335,16 +360,18 @@ export async function getShift(db: SQLiteDatabase, id: string): Promise<ShiftRec
   return mapShift(row, tipOut, tipShare);
 }
 
-export async function listShifts(db: SQLiteDatabase, profileId: string): Promise<ShiftRecord[]> {
+export async function listShifts(db: AppDatabase, profileId: string): Promise<ShiftRecord[]> {
+  if (isWebDatabase(db)) return webDb.listShifts(db, profileId);
   return loadShifts(db, "WHERE s.profile_id = ?", [profileId]);
 }
 
 export async function listShiftsInRange(
-  db: SQLiteDatabase,
+  db: AppDatabase,
   profileId: string,
   start: string | null,
   end: string | null,
 ): Promise<ShiftRecord[]> {
+  if (isWebDatabase(db)) return webDb.listShiftsInRange(db, profileId, start, end);
   if (start && end) return loadShifts(db, "WHERE s.profile_id = ? AND s.shift_date >= ? AND s.shift_date <= ?", [profileId, start, end]);
   return listShifts(db, profileId);
 }

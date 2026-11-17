@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Platform, Pressable, Text, View } from "react-native";
 import Constants from "expo-constants";
 import { formatClock, formatHoursPhrase, formatMoneyInput } from "../../src/calc/format";
 import { parseMoney } from "../../src/calc/money";
@@ -202,7 +202,11 @@ export default function Settings() {
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>About</Text>
         <Muted>Tip Tracker {version}</Muted>
         <Muted>Tip Tracker is a personal record of what you enter. It is not tax, payroll, or legal advice.</Muted>
-        <Muted>Your shifts stay on this phone. If you back up your phone, your shifts may be in that backup. Tip Tracker does not upload them.</Muted>
+        <Muted>
+          {Platform.OS === "web"
+            ? "This web copy keeps your shifts in this browser. It does not upload them, and it does not share them with a copy you install from the App Store."
+            : "Your shifts stay on this phone. If you back up your phone, your shifts may be in that backup. Tip Tracker does not upload them."}
+        </Muted>
       </Card>
 
       <Button label="Delete all data" kind="danger" onPress={() => router.push("/data/delete")} />

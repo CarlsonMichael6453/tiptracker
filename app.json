@@ -22,7 +22,14 @@
     "web": {
       "bundler": "metro",
       "output": "single",
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "name": "Tip Tracker",
+      "description": "A personal record of restaurant shifts, tips, and tip-out. It stays in this browser.",
+      "themeColor": "#1A1E16",
+      "backgroundColor": "#1A1E16"
+    },
+    "experiments": {
+      "baseUrl": "/tiptracker"
     },
     "plugins": [
       [

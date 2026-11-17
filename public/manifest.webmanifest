@@ -1,0 +1,19 @@
+{
+  "name": "Tip Tracker",
+  "short_name": "Tip Tracker",
+  "description": "A personal record of restaurant shifts, tips, and tip-out.",
+  "start_url": "/tiptracker/",
+  "scope": "/tiptracker/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1A1E16",
+  "theme_color": "#1A1E16",
+  "icons": [
+    {
+      "src": "/tiptracker/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

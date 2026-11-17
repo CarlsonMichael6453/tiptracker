@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { SQLiteDatabase } from "expo-sqlite";
 import { openDatabase } from "../db/database";
+import type { AppDatabase } from "../db/types";
 import type { Appearance, Profile } from "../domain/types";
 import {
   getActiveProfileId,
@@ -14,7 +14,7 @@ import {
 type AppContextValue = {
   ready: boolean;
   bootError: string | null;
-  db: SQLiteDatabase | null;
+  db: AppDatabase | null;
   profiles: Profile[];
   activeProfile: Profile | null;
   appearance: Appearance;
@@ -28,7 +28,7 @@ const AppContext = createContext<AppContextValue | null>(null);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [bootError, setBootError] = useState<string | null>(null);
-  const [db, setDb] = useState<SQLiteDatabase | null>(null);
+  const [db, setDb] = useState<AppDatabase | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfile, setActiveProfile] = useState<Profile | null>(null);
   const [appearance, setAppearanceState] = useState<Appearance>("system");

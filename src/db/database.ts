@@ -1,17 +1,18 @@
 import * as SQLite from "expo-sqlite";
 import { SCHEMA_SQL } from "./schema";
+import type { AppDatabase } from "./types";
 
 const DATABASE_NAME = "tiptracker.db";
 const SCHEMA_VERSION = 1;
 
-let opening: Promise<SQLite.SQLiteDatabase> | null = null;
+let opening: Promise<AppDatabase> | null = null;
 
-export function openDatabase(): Promise<SQLite.SQLiteDatabase> {
+export function openDatabase(): Promise<AppDatabase> {
   if (!opening) opening = openAndMigrate();
   return opening;
 }
 
-async function openAndMigrate(): Promise<SQLite.SQLiteDatabase> {
+async function openAndMigrate(): Promise<AppDatabase> {
   const db = await SQLite.openDatabaseAsync(DATABASE_NAME);
   await db.execAsync("PRAGMA foreign_keys = ON;");
   const row = await db.getFirstAsync<{ user_version: number }>("PRAGMA user_version");
@@ -25,8 +26,4 @@ async function openAndMigrate(): Promise<SQLite.SQLiteDatabase> {
     await db.execAsync("PRAGMA foreign_keys = ON;");
   }
   return db;
-}
-
-export function nowIso(): string {
-  return new Date().toISOString();
 }

@@ -4,6 +4,16 @@ A phone notebook for a restaurant shift. You log hours, wage, guest tips, sales,
 
 It is a personal record of what you type. It is not payroll, tax, or legal advice. There is no account, and the app does not upload shifts.
 
+## Try it on an iPhone in Safari
+
+The hosted copy is for private testing:
+
+**https://carlsonmichael6453.github.io/tiptracker/**
+
+Open that address in Safari, then use Share → Add to Home Screen. Shifts are stored in that browser (IndexedDB). They are not uploaded, and they are not the same book as a copy running in Expo Go or a future App Store build. Clearing Safari website data deletes them. GitHub Pages cannot turn on the special headers the native SQLite file needs in a browser, so this copy uses browser storage instead of `expo-sqlite`.
+
+A refresh of a screen such as History stays on that screen. The site is not a public launch.
+
 ## Open it on your phone with Expo Go
 
 This copy is the source project. It is not a store build and it does not have a standing QR code, because the shifts are meant to stay on the phone that is running it. Michael (or anyone with the repo) starts it on a computer, then opens it in Expo Go.
