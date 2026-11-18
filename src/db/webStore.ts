@@ -1,3 +1,5 @@
+import { isCivilDate } from "../calc/dates";
+import type { Profile } from "../domain/types";
 import { parseAppearance } from "../ui/appearance";
 import { emptyWebState, type WebDatabase, type WebState } from "./types";
 
@@ -69,13 +71,25 @@ async function persistState(state: WebState): Promise<void> {
   globalThis.localStorage.setItem(LS_KEY, json);
 }
 
+function normalizeProfile(profile: Profile): Profile {
+  const goal = profile.weeklyGoalCents;
+  const celebrated = profile.tipJarCelebratedWeek;
+  return {
+    ...profile,
+    appearance: parseAppearance(profile.appearance),
+    weeklyGoalCents: typeof goal === "number" && Number.isInteger(goal) && goal > 0 ? goal : null,
+    showTipJar: profile.showTipJar === false ? false : true,
+    tipJarCelebratedWeek: typeof celebrated === "string" && isCivilDate(celebrated) ? celebrated : null,
+  };
+}
+
 function parseState(json: string): WebState {
   const data = JSON.parse(json) as Partial<WebState>;
   if (!data || !Array.isArray(data.profiles) || !Array.isArray(data.roles) || !Array.isArray(data.shifts)) {
     return emptyWebState();
   }
   return {
-    profiles: data.profiles.map((profile) => ({ ...profile, appearance: parseAppearance(profile.appearance) })),
+    profiles: data.profiles.map((profile) => normalizeProfile(profile)),
     roles: data.roles,
     shifts: data.shifts,
     kv: data.kv && typeof data.kv === "object" ? data.kv : {},

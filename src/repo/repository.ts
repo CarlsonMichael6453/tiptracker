@@ -48,8 +48,8 @@ export async function createProfile(
   if (isWebDatabase(db)) return webDb.createProfile(db, input);
   await db.withTransactionAsync(async () => {
     await db.runAsync(
-      `INSERT INTO profile (id, name, default_wage_cents, week_starts_on, lunch_cutoff_minutes, double_threshold_minutes, last_role_id, appearance_json, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO profile (id, name, default_wage_cents, week_starts_on, lunch_cutoff_minutes, double_threshold_minutes, last_role_id, appearance_json, weekly_goal_cents, show_tip_jar, tip_jar_celebrated_week, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 1, NULL, ?, ?)`,
       id,
       input.name.trim(),
       input.wageCents,
@@ -89,7 +89,7 @@ export async function createProfile(
 export async function updateProfile(
   db: AppDatabase,
   id: string,
-  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes" | "appearance">>,
+  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes" | "appearance" | "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek">>,
 ): Promise<void> {
   if (isWebDatabase(db)) return webDb.updateProfile(db, id, patch);
   const current = await getProfile(db, id);
@@ -101,15 +101,21 @@ export async function updateProfile(
     lunchCutoffMinutes: patch.lunchCutoffMinutes ?? current.lunchCutoffMinutes,
     doubleThresholdMinutes: patch.doubleThresholdMinutes ?? current.doubleThresholdMinutes,
     appearance: patch.appearance ?? current.appearance,
+    weeklyGoalCents: "weeklyGoalCents" in patch ? (patch.weeklyGoalCents && patch.weeklyGoalCents > 0 ? patch.weeklyGoalCents : null) : current.weeklyGoalCents,
+    showTipJar: patch.showTipJar != null ? patch.showTipJar : current.showTipJar,
+    tipJarCelebratedWeek: "tipJarCelebratedWeek" in patch ? (patch.tipJarCelebratedWeek ?? null) : current.tipJarCelebratedWeek,
   };
   await db.runAsync(
-    `UPDATE profile SET name = ?, default_wage_cents = ?, week_starts_on = ?, lunch_cutoff_minutes = ?, double_threshold_minutes = ?, appearance_json = ?, updated_at = ? WHERE id = ?`,
+    `UPDATE profile SET name = ?, default_wage_cents = ?, week_starts_on = ?, lunch_cutoff_minutes = ?, double_threshold_minutes = ?, appearance_json = ?, weekly_goal_cents = ?, show_tip_jar = ?, tip_jar_celebrated_week = ?, updated_at = ? WHERE id = ?`,
     next.name,
     next.defaultWageCents,
     next.weekStartsOn,
     next.lunchCutoffMinutes,
     next.doubleThresholdMinutes,
     JSON.stringify(next.appearance),
+    next.weeklyGoalCents,
+    next.showTipJar ? 1 : 0,
+    next.tipJarCelebratedWeek,
     nowIso(),
     id,
   );
@@ -538,6 +544,9 @@ type ProfileRow = {
   double_threshold_minutes: number;
   last_role_id: string | null;
   appearance_json: string | null;
+  weekly_goal_cents: number | null;
+  show_tip_jar: number | null;
+  tip_jar_celebrated_week: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -633,6 +642,9 @@ function mapProfile(row: ProfileRow): Profile {
     doubleThresholdMinutes: row.double_threshold_minutes,
     lastRoleId: row.last_role_id,
     appearance: parseAppearance(parseJson(row.appearance_json)),
+    weeklyGoalCents: row.weekly_goal_cents != null && row.weekly_goal_cents > 0 ? row.weekly_goal_cents : null,
+    showTipJar: row.show_tip_jar === 0 ? false : true,
+    tipJarCelebratedWeek: row.tip_jar_celebrated_week,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

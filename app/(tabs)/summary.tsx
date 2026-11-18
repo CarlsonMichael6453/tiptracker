@@ -153,7 +153,7 @@ export default function Summary() {
   );
 
   return (
-    <Screen>
+    <Screen tipJar>
       <Chips
         value={range}
         onChange={(value) => setRange(value as RangeKey)}

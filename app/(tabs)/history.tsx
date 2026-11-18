@@ -34,7 +34,7 @@ export default function History() {
   );
 
   return (
-    <Screen scroll={false}>
+    <Screen scroll={false} tipJar>
       <SectionList
         sections={sections}
         keyExtractor={(item) => item.id}

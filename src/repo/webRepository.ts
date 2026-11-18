@@ -65,6 +65,9 @@ export function createProfile(
       doubleThresholdMinutes: DEFAULT_DOUBLE_THRESHOLD_MINUTES,
       lastRoleId: roles[usualIndex]?.id ?? roles[0]?.id ?? null,
       appearance: defaultAppearance(),
+      weeklyGoalCents: null,
+      showTipJar: true,
+      tipJarCelebratedWeek: null,
       createdAt: created,
       updatedAt: created,
     });
@@ -77,7 +80,7 @@ export function createProfile(
 export function updateProfile(
   db: WebDatabase,
   id: string,
-  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes" | "appearance">>,
+  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes" | "appearance" | "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek">>,
 ): Promise<void> {
   return db.update((state) => {
     const current = state.profiles.find((profile) => profile.id === id);
@@ -88,6 +91,9 @@ export function updateProfile(
     if (patch.lunchCutoffMinutes != null) current.lunchCutoffMinutes = patch.lunchCutoffMinutes;
     if (patch.doubleThresholdMinutes != null) current.doubleThresholdMinutes = patch.doubleThresholdMinutes;
     if (patch.appearance != null) current.appearance = patch.appearance;
+    if ("weeklyGoalCents" in patch) current.weeklyGoalCents = patch.weeklyGoalCents && patch.weeklyGoalCents > 0 ? patch.weeklyGoalCents : null;
+    if (patch.showTipJar != null) current.showTipJar = patch.showTipJar;
+    if ("tipJarCelebratedWeek" in patch) current.tipJarCelebratedWeek = patch.tipJarCelebratedWeek ?? null;
     current.updatedAt = nowIso();
   });
 }

@@ -23,6 +23,7 @@ type AppContextValue = {
   setActive: (id: string) => Promise<void>;
   updateAppearance: (value: Appearance) => Promise<void>;
   saveProfileAppearance: (value: AppearanceSettings) => Promise<void>;
+  saveTipJar: (patch: Partial<Pick<Profile, "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek">>) => Promise<void>;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -104,6 +105,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [db],
   );
 
+  const saveTipJar = useCallback(
+    async (patch: Partial<Pick<Profile, "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek">>) => {
+      if (!db || !activeProfile) return;
+      const next = { ...activeProfile, ...patch };
+      setActiveProfile(next);
+      setProfiles((list) => list.map((profile) => (profile.id === next.id ? next : profile)));
+      await updateProfile(db, next.id, patch);
+    },
+    [db, activeProfile],
+  );
+
   const saveProfileAppearance = useCallback(
     async (value: AppearanceSettings) => {
       if (!db || !activeProfile) return;
@@ -116,8 +128,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ ready, bootError, db, profiles, activeProfile, appearance, reload, setActive, updateAppearance, saveProfileAppearance }),
-    [ready, bootError, db, profiles, activeProfile, appearance, reload, setActive, updateAppearance, saveProfileAppearance],
+    () => ({ ready, bootError, db, profiles, activeProfile, appearance, reload, setActive, updateAppearance, saveProfileAppearance, saveTipJar }),
+    [ready, bootError, db, profiles, activeProfile, appearance, reload, setActive, updateAppearance, saveProfileAppearance, saveTipJar],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

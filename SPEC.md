@@ -195,11 +195,23 @@ No account, no email, no notification prompt.
 - Active profile name, and a profile switcher when more than one exists.
 - **Log shift** as the primary button.
 - This week’s earnings dashboard for the active profile: take-home as the large number, then real hourly, hours, and shift count. The card says, in small type, “Real hourly = (wages + tips − tip-outs) ÷ hours.”
+- One pace line under that card. It compares this week’s take-home so far with his usual week at the same point. The sentence is specified in section 7.14.
+- A tip jar in the top-right corner of Home, History, Summary, and Settings, unless he turns it off. Tapping it opens the sheet in section 5.2.1.
 - The latest shift: weekday, date, role label, hours, take-home. Tap opens it.
 
 **Empty**
 
-“No shifts yet. Log tonight when you clock out.” The week card does not show $0.00/hour. It shows “No shifts this week.”
+“No shifts yet. Log tonight when you clock out.” The week card does not show $0.00/hour. It shows “No shifts this week.” The pace line still shows. With fewer than two earlier weeks it says “Log a couple of weeks to see your pace.”
+
+### 5.2.1 Tip jar
+
+A small jar in the top-right of the main tabs. It fills toward the weekly take-home goal for the current week. The week uses the profile’s week start (default Wednesday). Take-home is wages + tips − tip-outs, the same total as the dashboard.
+
+- No goal yet: the jar is empty. Tapping it asks him to set one.
+- With a goal: the sheet says “$520 of $800”, how much is left, the pace line, and whether he is on track for the goal (“On track to hit $800”). He can change the goal there.
+- The fill animates. If the system asks for less motion, the level changes without animation.
+- The first time the jar reaches the goal in a week, a short sparkle plays once. The same week does not celebrate again. Less motion skips the sparkle and still counts the week as celebrated.
+- Settings has “Show tip jar”, on by default, saved on the profile. Off hides the icon. The pace line on Home stays.
 
 ### 5.3 Log shift / Edit shift
 
@@ -362,6 +374,7 @@ Directly under the totals, for the selected range. Specified in section 8. Custo
 - Rename.
 - Default hourly wage. New roles inherit it. Does not rewrite old shifts or roles that have their own wage.
 - Week starts on. Default Wednesday for a new profile.
+- Show tip jar. On by default. Hides the icon in section 5.2.1. Does not hide the pace line.
 - Lunch cutoff. Default 4:00pm. “Shifts starting before this count as lunch. This does not change your totals.”
 - Double / all-day threshold. Default 8 hours. “Shifts longer than this count as a double / all-day unless you mark one otherwise. An 8-hour shift is a single when this is 8 hours.”
 - Roles. Add, rename, reorder, delete. Deleting a role keeps the name already saved on old shifts. The last role cannot be deleted. Each role has:
@@ -403,6 +416,9 @@ Computed money on a shift is a snapshot written at save. Opening the app does no
 | `lunch_cutoff_minutes` | INTEGER | Required. 0–1439. Default 960 (4:00pm). |
 | `double_threshold_minutes` | INTEGER | Required. Default 480 (8 hours). Allowed range 360–720 (6–12 hours). A shift is a double / all-day only when its length is **greater than** this value. |
 | `last_role_id` | TEXT | Null until the first save. The role preselected on the next new shift. Set null if that role is deleted. |
+| `weekly_goal_cents` | INTEGER | Null until he sets a weekly take-home goal. When set, greater than 0. |
+| `show_tip_jar` | INTEGER | Required. 1 or 0. Default 1. |
+| `tip_jar_celebrated_week` | TEXT | Null, or the week-start date of the last goal celebration. One celebration per week. |
 | `created_at`, `updated_at` | TEXT | Required. |
 
 ### 6.2 `role`
@@ -670,6 +686,32 @@ tips per hour = section 7.7 over those sums
 ```
 
 **This week.** `w` = week start. A new profile uses Wednesday. Start = the latest date on or before today whose weekday is `w`. End = start + 6 days.
+
+### 7.14 Tip jar and pace
+
+Both use take-home cents. The jar’s week is the same “this week” as the dashboard.
+
+**Goal.** `fill` = 0 when take-home is 0 or negative, otherwise take-home ÷ goal, never drawn above 1. Remaining = goal − take-home, and it can be more than the goal when take-home is negative. Met when take-home ≥ goal. No goal means an empty jar and no goal sentence.
+
+**Pace.** Offset = days from the week start through today, 0 on the first day. This week’s number is take-home of shifts from the week start through today.
+
+A prior week counts only when it has at least one shift on or before that same offset. Weeks with shifts only later in the week are skipped. Use the latest 8 such weeks. With fewer than 2, the line is “Log a couple of weeks to see your pace.”
+
+Otherwise compare this week’s number with the average of those weeks (half away from zero).
+
+- More than every one of at least four of those weeks: “Best week in a month.”
+- Within $5.00 of the average: “Right on pace.”
+- Ahead: “$60 ahead of your usual week.”
+- Behind, and today is not the last day of the week: “$40 behind your average Thursday-to-date, a good Friday catches you up.” The weekday names are today and tomorrow.
+- Behind on the last day of the week: “$40 behind your usual week.”
+
+**Goal pace**, only when a goal is set. Elapsed days = offset + 1. Projected = this week’s take-home × 7 ÷ elapsed days, half away from zero.
+
+- Already met: “You hit $800.”
+- Projected ≥ goal: “On track to hit $800.”
+- Otherwise: “Behind the pace for $800.”
+
+Whole-dollar amounts are written without cents.
 
 **This month.** First through last civil day of today’s month.
 

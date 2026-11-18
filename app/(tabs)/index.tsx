@@ -4,6 +4,7 @@ import { Pressable, Text, View } from "react-native";
 import { formatHoursPhrase, formatMoney, formatRate } from "../../src/calc/format";
 import { formatWeekdayDate, todayCivil, weekRange } from "../../src/calc/dates";
 import { periodTotals } from "../../src/calc/period";
+import { paceReport } from "../../src/calc/tipJar";
 import type { ShiftRecord } from "../../src/domain/types";
 import { listShiftsInRange } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
@@ -18,6 +19,7 @@ export default function Home() {
   const [takeHome, setTakeHome] = useState<string | null>(null);
   const [detail, setDetail] = useState("");
   const [openSwitcher, setOpenSwitcher] = useState(false);
+  const [pace, setPace] = useState("");
 
   const load = useCallback(async () => {
     if (!db || !activeProfile) return;
@@ -38,6 +40,14 @@ export default function Home() {
     }
     const recent = await listShiftsInRange(db, activeProfile.id, "0001-01-01", "9999-12-31");
     setLatest(recent[0] ?? null);
+    setPace(
+      paceReport({
+        today,
+        weekStartsOn: activeProfile.weekStartsOn,
+        goalCents: activeProfile.weeklyGoalCents,
+        shifts: recent.map((shift) => ({ shiftDate: shift.shiftDate, takeHomeCents: shift.takeHomeCents })),
+      }).paceLine,
+    );
   }, [db, activeProfile]);
 
   useFocusEffect(
@@ -49,7 +59,7 @@ export default function Home() {
   if (!activeProfile) return null;
 
   return (
-    <Screen>
+    <Screen tipJar>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
         <Title>{activeProfile.name}</Title>
         {profiles.length > 1 ? (
@@ -88,6 +98,7 @@ export default function Home() {
           </>
         )}
         <Text style={{ color: palette.faint, fontSize: 13 }}>Real hourly = (wages + tips − tip-outs) ÷ hours.</Text>
+        {pace ? <Text style={{ color: palette.text, fontSize: 15 }}>{pace}</Text> : null}
       </Card>
       {latest ? (
         <Pressable accessibilityRole="button" onPress={() => router.push(`/shift/${latest.id}`)}>

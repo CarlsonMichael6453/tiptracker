@@ -11,6 +11,9 @@ CREATE TABLE IF NOT EXISTS profile (
   double_threshold_minutes INTEGER NOT NULL CHECK (double_threshold_minutes BETWEEN 360 AND 720),
   last_role_id TEXT,
   appearance_json TEXT,
+  weekly_goal_cents INTEGER CHECK (weekly_goal_cents IS NULL OR weekly_goal_cents > 0),
+  show_tip_jar INTEGER NOT NULL DEFAULT 1 CHECK (show_tip_jar IN (0, 1)),
+  tip_jar_celebrated_week TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );

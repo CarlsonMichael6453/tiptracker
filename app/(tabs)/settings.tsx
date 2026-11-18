@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Platform, Pressable, Text, View } from "react-native";
+import { Alert, Platform, Pressable, Switch, Text, View } from "react-native";
 import Constants from "expo-constants";
 import { formatClock, formatHoursPhrase, formatMoneyInput } from "../../src/calc/format";
 import { parseMoney } from "../../src/calc/money";
@@ -20,7 +20,7 @@ import { Button, Card, ErrorList, Field, Muted, Screen, Title, WeekStartPicker }
 import { useTheme } from "../../src/ui/theme";
 
 export default function Settings() {
-  const { db, activeProfile, profiles, reload, setActive, saveProfileAppearance } = useApp();
+  const { db, activeProfile, profiles, reload, setActive, saveProfileAppearance, saveTipJar } = useApp();
   const { palette } = useTheme();
   const [roles, setRoles] = useState<Role[]>([]);
   const [name, setName] = useState("");
@@ -120,12 +120,25 @@ export default function Settings() {
   };
 
   return (
-    <Screen>
+    <Screen tipJar>
       <Title>Settings</Title>
       <Card>
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>This profile</Text>
         <Field label="Name" value={name} keyboard="default" onChangeText={setName} />
         <Field label="Default hourly wage" value={wage} onChangeText={setWage} hint="New roles inherit this. Saved shifts keep their own wage." />
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 44 }}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={{ color: palette.text, fontWeight: "700", fontSize: 16 }}>Show tip jar</Text>
+            <Text style={{ color: palette.muted, fontSize: 13 }}>Fills toward this week’s take-home goal.</Text>
+          </View>
+          <Switch
+            accessibilityLabel="Show tip jar"
+            value={profile.showTipJar}
+            onValueChange={(on) => void saveTipJar({ showTipJar: on })}
+            trackColor={{ false: palette.line, true: palette.accent }}
+            thumbColor={palette.card}
+          />
+        </View>
         <Text style={{ color: palette.muted, fontWeight: "600" }}>Week starts on</Text>
         <WeekStartPicker value={weekStartsOn} onChange={setWeekStartsOn} />
         <Stepper
