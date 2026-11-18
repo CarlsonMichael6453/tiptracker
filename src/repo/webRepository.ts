@@ -100,9 +100,12 @@ export function updateProfile(
 
 export function deleteProfile(db: WebDatabase, id: string): Promise<void> {
   return db.update((state) => {
+    const removed = new Set((state.goals ?? []).filter((goal) => goal.profileId === id).map((goal) => goal.id));
     state.profiles = state.profiles.filter((profile) => profile.id !== id);
     state.roles = state.roles.filter((role) => role.profileId !== id);
     state.shifts = state.shifts.filter((shift) => shift.profileId !== id);
+    state.goals = (state.goals ?? []).filter((goal) => goal.profileId !== id);
+    state.goalEntries = (state.goalEntries ?? []).filter((entry) => !removed.has(entry.goalId));
     if (state.kv.active_profile_id === id) {
       const next = state.profiles.slice().sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1))[0];
       if (next) state.kv.active_profile_id = next.id;
@@ -122,6 +125,8 @@ export function deleteAllData(db: WebDatabase): Promise<void> {
     state.profiles = [];
     state.roles = [];
     state.shifts = [];
+    state.goals = [];
+    state.goalEntries = [];
     delete state.kv.active_profile_id;
   });
 }

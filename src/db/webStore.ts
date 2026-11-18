@@ -1,5 +1,5 @@
 import { isCivilDate } from "../calc/dates";
-import type { Profile } from "../domain/types";
+import type { GoalEntry, GoalEntryKind, GoalHorizon, GoalStatus, Profile, SavingsGoal } from "../domain/types";
 import { parseAppearance } from "../ui/appearance";
 import { emptyWebState, type WebDatabase, type WebState } from "./types";
 
@@ -83,6 +83,42 @@ function normalizeProfile(profile: Profile): Profile {
   };
 }
 
+function normalizeGoal(raw: SavingsGoal): SavingsGoal | null {
+  if (!raw || typeof raw.id !== "string" || typeof raw.profileId !== "string") return null;
+  const name = typeof raw.name === "string" ? raw.name.trim() : "";
+  if (!name || typeof raw.targetCents !== "number" || raw.targetCents <= 0) return null;
+  const horizon: GoalHorizon = raw.horizon === "long" ? "long" : "short";
+  const status: GoalStatus = raw.status === "complete" || raw.status === "archived" ? raw.status : "active";
+  return {
+    id: raw.id,
+    profileId: raw.profileId,
+    name: name.slice(0, 40),
+    targetCents: raw.targetCents,
+    targetDate: typeof raw.targetDate === "string" && isCivilDate(raw.targetDate) ? raw.targetDate : null,
+    horizon,
+    weeklySetAsideCents: typeof raw.weeklySetAsideCents === "number" && raw.weeklySetAsideCents > 0 ? Math.round(raw.weeklySetAsideCents) : 0,
+    savedCents: typeof raw.savedCents === "number" && raw.savedCents > 0 ? Math.round(raw.savedCents) : 0,
+    status,
+    celebrated: raw.celebrated === true,
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
+  };
+}
+
+function normalizeEntry(raw: GoalEntry): GoalEntry | null {
+  if (!raw || typeof raw.id !== "string" || typeof raw.goalId !== "string") return null;
+  const kinds: GoalEntryKind[] = ["set_aside", "add", "withdraw", "adjust", "skip"];
+  if (!kinds.includes(raw.kind) || typeof raw.amountCents !== "number") return null;
+  return {
+    id: raw.id,
+    goalId: raw.goalId,
+    kind: raw.kind,
+    amountCents: Math.round(raw.amountCents),
+    weekStart: typeof raw.weekStart === "string" && isCivilDate(raw.weekStart) ? raw.weekStart : null,
+    createdAt: raw.createdAt,
+  };
+}
+
 function parseState(json: string): WebState {
   const data = JSON.parse(json) as Partial<WebState>;
   if (!data || !Array.isArray(data.profiles) || !Array.isArray(data.roles) || !Array.isArray(data.shifts)) {
@@ -92,6 +128,8 @@ function parseState(json: string): WebState {
     profiles: data.profiles.map((profile) => normalizeProfile(profile)),
     roles: data.roles,
     shifts: data.shifts,
+    goals: Array.isArray(data.goals) ? data.goals.map(normalizeGoal).filter((goal): goal is SavingsGoal => goal != null) : [],
+    goalEntries: Array.isArray(data.goalEntries) ? data.goalEntries.map(normalizeEntry).filter((entry): entry is GoalEntry => entry != null) : [],
     kv: data.kv && typeof data.kv === "object" ? data.kv : {},
   };
 }

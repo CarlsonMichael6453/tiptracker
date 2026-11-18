@@ -49,6 +49,8 @@ function Navigation() {
         <Stack.Screen name="role/new" options={{ title: "Add role" }} />
         <Stack.Screen name="role/[id]" options={{ title: "Role" }} />
         <Stack.Screen name="data/delete" options={{ title: "Delete everything" }} />
+        <Stack.Screen name="goal/new" options={{ title: "New goal" }} />
+        <Stack.Screen name="goal/[id]" options={{ title: "Goal" }} />
       </Stack>
     </>
   );

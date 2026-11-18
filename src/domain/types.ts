@@ -28,6 +28,34 @@ export type AppearanceSettings = {
   animateBackground: boolean;
 } & Record<DecorativeStyle, ColorPair>;
 
+export type GoalHorizon = "short" | "long";
+export type GoalStatus = "active" | "complete" | "archived";
+export type GoalEntryKind = "set_aside" | "add" | "withdraw" | "adjust" | "skip";
+
+export type SavingsGoal = {
+  id: string;
+  profileId: string;
+  name: string;
+  targetCents: number;
+  targetDate: string | null;
+  horizon: GoalHorizon;
+  weeklySetAsideCents: number;
+  savedCents: number;
+  status: GoalStatus;
+  celebrated: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type GoalEntry = {
+  id: string;
+  goalId: string;
+  kind: GoalEntryKind;
+  amountCents: number;
+  weekStart: string | null;
+  createdAt: string;
+};
+
 export type TipOutDefault = {
   id: string;
   label: string | null;

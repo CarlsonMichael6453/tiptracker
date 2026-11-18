@@ -212,6 +212,21 @@ A small jar in the top-right of the main tabs. It fills toward the weekly take-h
 - The fill animates. If the system asks for less motion, the level changes without animation.
 - The first time the jar reaches the goal in a week, a short sparkle plays once. The same week does not celebrate again. Less motion skips the sparkle and still counts the week as celebrated.
 - Settings has “Show tip jar”, on by default, saved on the profile. Off hides the icon. The pace line on Home stays.
+- Below the weekly jar, the sheet lists savings goals. Short-term bars, then long-term bars. That part is section 5.2.2.
+
+### 5.2.2 Savings goals
+
+Separate from the weekly take-home goal. A savings goal fills only from money he sets aside. Logged wages and tips never move into it.
+
+Each goal, per profile: a name (“New phone”, “Emergency fund”, “June trip”), a target amount, an optional target date, a type (short-term or long-term), and a weekly set-aside. If the date is within about three months, the form suggests short-term. He still picks.
+
+Each week, using the profile’s week start, the tip jar sheet asks “Set aside $40 for New phone this week?” He can change that week’s amount, confirm, or skip. Nothing is added until he confirms. Skip means not this week. He can also add money, withdraw, or set the saved balance from the goal’s screen. Every one of those writes a history line. The balance cannot go below $0.
+
+The weekly set-aside, the target amount, the target date, and the type can be edited any time on that screen. The pace line uses the numbers on the screen, so it changes as soon as he edits them, and again when he saves.
+
+If there is a target date and the goal is not reached: “About $95/week to hit it by Jun 1.” Then either “This week’s set-aside is on track” or “Set-aside is short of that pace.” Weeks are counted from this week through the week of the date. A passed date says the date has passed and what is left. No date means no pace line.
+
+The same bars appear on a Goals card on Summary. Reaching the target says “You reached …”, once until the balance drops below the target and reaches it again. Less motion keeps that as plain text. He can mark a goal complete, archive it, or delete it after a confirm. Complete and archived goals are not asked for a weekly set-aside. Delete-all removes every goal and its history with the shifts.
 
 ### 5.3 Log shift / Edit shift
 
@@ -525,7 +540,27 @@ What this shift actually used. Copied from the role default at save, then edited
 | `active_profile_id` | UUID. |
 | `appearance` | `system`, `light`, or `dark`. |
 
-### 6.8 What is not stored
+### 6.8 `savings_goal` and `goal_entry`
+
+A savings goal belongs to one profile. Deleting the profile deletes its goals. Delete-all deletes every goal.
+
+| Column | Type | Rules |
+| --- | --- | --- |
+| `id` | TEXT | Primary key. |
+| `profile_id` | TEXT | Required. Foreign key → `profile`. Cascade delete. |
+| `name` | TEXT | Required. Trimmed. 1–40 characters. |
+| `target_cents` | INTEGER | Required. Greater than 0. |
+| `target_date` | TEXT | Null, or a civil date. |
+| `horizon` | TEXT | Required. `short` or `long`. |
+| `weekly_set_aside_cents` | INTEGER | Required. ≥ 0. The usual amount for the weekly prompt. |
+| `saved_cents` | INTEGER | Required. ≥ 0. Equals the sum of the history, never below 0. |
+| `status` | TEXT | Required. `active`, `complete`, or `archived`. |
+| `celebrated` | INTEGER | 1 after the balance has reached the target, until it drops below again. |
+| `created_at`, `updated_at` | TEXT | Required. |
+
+`goal_entry` is the history. `kind` is `set_aside`, `add`, `withdraw`, `adjust`, or `skip`. `amount_cents` is the positive amount for set-aside, add, and withdraw, the signed change for an adjustment, and 0 for a skip. `week_start` is set for the weekly confirm and the weekly skip, so the prompt is not shown again that week.
+
+### 6.9 What is not stored
 
 - Real hourly, tips per hour, and tip percent of sales. Divided at display time from the snapshot.
 - The inferred meal and the inferred double. Derived on read from `start_minutes` or `duration_minutes`, the profile cutoffs, and the overrides. Changing the lunch cutoff changes Insights and the detail label. It does not change take-home.
@@ -712,6 +747,16 @@ Otherwise compare this week’s number with the average of those weeks (half awa
 - Otherwise: “Behind the pace for $800.”
 
 Whole-dollar amounts are written without cents.
+
+### 7.15 Savings goals
+
+Saved cents come only from confirmed entries. Take-home is not an input.
+
+- Progress fill = saved ÷ target, drawn no higher than 1. Percent is that ratio rounded to the nearest whole number, capped at 100. Remaining = target − saved, or 0 when saved is ahead.
+- A target date on or before today that is not yet met: “The date has passed.” No on-track line.
+- Otherwise, weeks = the number of week-starts from this week through the target date’s week, at least 1. Needed per week = remaining ÷ weeks, half away from zero. “About $95/week to hit it by Jun 1.” On track when the weekly set-aside is at least that amount.
+- Editing the target, the date, the saved balance, or the weekly set-aside uses those new numbers the next time this is calculated.
+- The weekly prompt is shown for an active goal with a set-aside above $0 when this week has neither a set-aside entry nor a skip. Confirming writes a set-aside. Skipping writes a skip. A $0 confirm is a skip.
 
 **This month.** First through last civil day of today’s month.
 

@@ -106,6 +106,30 @@ CREATE TABLE IF NOT EXISTS tip_share_line (
   sort_order INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS savings_goal (
+  id TEXT PRIMARY KEY NOT NULL,
+  profile_id TEXT NOT NULL REFERENCES profile(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  target_cents INTEGER NOT NULL CHECK (target_cents > 0),
+  target_date TEXT,
+  horizon TEXT NOT NULL CHECK (horizon IN ('short', 'long')),
+  weekly_set_aside_cents INTEGER NOT NULL CHECK (weekly_set_aside_cents >= 0),
+  saved_cents INTEGER NOT NULL CHECK (saved_cents >= 0),
+  status TEXT NOT NULL CHECK (status IN ('active', 'complete', 'archived')),
+  celebrated INTEGER NOT NULL CHECK (celebrated IN (0, 1)),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS goal_entry (
+  id TEXT PRIMARY KEY NOT NULL,
+  goal_id TEXT NOT NULL REFERENCES savings_goal(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL CHECK (kind IN ('set_aside', 'add', 'withdraw', 'adjust', 'skip')),
+  amount_cents INTEGER NOT NULL,
+  week_start TEXT,
+  created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS app_kv (
   key TEXT PRIMARY KEY NOT NULL,
   value TEXT NOT NULL
