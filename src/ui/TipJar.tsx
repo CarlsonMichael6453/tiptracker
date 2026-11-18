@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Easing, Modal, Pressable, Text, TextInput, View } from "react-native";
+import { Animated, Easing, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { todayCivil } from "../calc/dates";
 import { formatMoneyInput } from "../calc/format";
@@ -7,6 +7,7 @@ import { parseMoney } from "../calc/money";
 import { paceReport, speakMoney, type PaceShift } from "../calc/tipJar";
 import { listShifts } from "../repo/repository";
 import { useApp } from "../state/AppState";
+import { SavingsPanel } from "./SavingsGoals";
 import { useTheme } from "./theme";
 import { useBackgroundMotion } from "./useBackgroundMotion";
 
@@ -110,7 +111,8 @@ export function TipJar() {
       </Pressable>
       <Modal visible={open} transparent animationType={reduceMotion ? "none" : "fade"} onRequestClose={() => setOpen(false)}>
         <Pressable accessibilityRole="button" accessibilityLabel="Close tip jar" onPress={() => setOpen(false)} style={{ flex: 1, backgroundColor: "rgba(20, 22, 16, 0.45)", justifyContent: "flex-end" }}>
-          <Pressable onPress={() => undefined} style={{ backgroundColor: palette.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, gap: 12 }}>
+          <Pressable onPress={() => undefined} style={{ backgroundColor: palette.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: "88%" }}>
+          <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }} keyboardShouldPersistTaps="handled">
             <View style={{ alignItems: "center", gap: 8 }}>
               <View>
                 <JarGraphic fill={progress.fill} size={112} reduceMotion={reduceMotion} />
@@ -158,6 +160,7 @@ export function TipJar() {
             >
               <Text style={{ color: palette.onPrimary, fontWeight: "700", fontSize: 17 }}>{progress.hasGoal ? "Save goal" : "Set goal"}</Text>
             </Pressable>
+            <SavingsPanel onNavigate={() => setOpen(false)} />
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Close"
@@ -166,6 +169,7 @@ export function TipJar() {
             >
               <Text style={{ color: palette.text, fontWeight: "700", fontSize: 17 }}>Close</Text>
             </Pressable>
+          </ScrollView>
           </Pressable>
         </Pressable>
       </Modal>

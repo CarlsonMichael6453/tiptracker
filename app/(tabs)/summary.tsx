@@ -17,6 +17,7 @@ import type { ShiftRecord } from "../../src/domain/types";
 import { listShifts, listShiftsInRange } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
 import { Card, Chips, DateStepper, Muted, Screen } from "../../src/ui/components";
+import { SavingsPanel } from "../../src/ui/SavingsGoals";
 import { useTheme } from "../../src/ui/theme";
 
 type RangeKey = "week" | "month" | "all" | "custom";
@@ -170,6 +171,9 @@ export default function Summary() {
           <DateStepper value={customEnd} max={todayCivil()} onChange={setCustomEnd} />
         </View>
       ) : null}
+      <Card>
+        <SavingsPanel />
+      </Card>
       {body}
     </Screen>
   );

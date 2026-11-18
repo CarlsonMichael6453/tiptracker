@@ -1,16 +1,18 @@
 import type { SQLiteDatabase } from "expo-sqlite";
-import type { Profile, Role, ShiftRecord } from "../domain/types";
+import type { GoalEntry, Profile, Role, SavingsGoal, ShiftRecord } from "../domain/types";
 
 /** The whole ledger, as kept by the browser build. */
 export type WebState = {
   profiles: Profile[];
   roles: Role[];
   shifts: ShiftRecord[];
+  goals: SavingsGoal[];
+  goalEntries: GoalEntry[];
   kv: Record<string, string>;
 };
 
 export function emptyWebState(): WebState {
-  return { profiles: [], roles: [], shifts: [], kv: {} };
+  return { profiles: [], roles: [], shifts: [], goals: [], goalEntries: [], kv: {} };
 }
 
 /**

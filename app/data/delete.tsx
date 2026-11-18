@@ -22,8 +22,8 @@ export default function DeleteData() {
     <Screen withHeader>
       <Card>
         <Text style={{ color: palette.text, fontSize: 18, lineHeight: 26 }}>
-          This removes {counts?.profiles ?? "…"} {counts?.profiles === 1 ? "profile" : "profiles"} and {counts?.shifts ?? "…"}{" "}
-          {counts?.shifts === 1 ? "shift" : "shifts"} from this phone. Tip Tracker does not have a copy.
+          This removes {counts?.profiles ?? "…"} {counts?.profiles === 1 ? "profile" : "profiles"}, {counts?.shifts ?? "…"}{" "}
+          {counts?.shifts === 1 ? "shift" : "shifts"}, and every savings goal from this phone. Tip Tracker does not have a copy.
         </Text>
       </Card>
       <Button
