@@ -90,8 +90,33 @@ export type Profile = {
   showTipJar: boolean;
   /** Week-start date of the last 100% celebration, so it plays once per week. */
   tipJarCelebratedWeek: string | null;
+  /** Weekday the pay period starts. Separate from the dashboard week. Default Friday. */
+  payPeriodStartsOn: number;
+  /** 1 = weekly, 2 = every two weeks. */
+  payPeriodWeeks: 1 | 2;
   createdAt: string;
   updatedAt: string;
+};
+
+export type PayStub = {
+  id: string;
+  profileId: string;
+  periodStart: string;
+  periodEnd: string;
+  payDate: string | null;
+  regularMinutes: number;
+  overtimeMinutes: number;
+  hourlyRateCents: number;
+  grossWagesCents: number;
+  cashTipsCents: number;
+  cardTipsCents: number;
+  grossPayCents: number;
+  otherDeductionsCents: number;
+  netPayCents: number;
+  taxes: { name: string; cents: number }[];
+  confidence: Record<string, number>;
+  photoDataUrl: string | null;
+  createdAt: string;
 };
 
 export type TipOutLineRecord = {

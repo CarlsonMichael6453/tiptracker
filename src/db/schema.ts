@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS profile (
   weekly_goal_cents INTEGER CHECK (weekly_goal_cents IS NULL OR weekly_goal_cents > 0),
   show_tip_jar INTEGER NOT NULL DEFAULT 1 CHECK (show_tip_jar IN (0, 1)),
   tip_jar_celebrated_week TEXT,
+  pay_period_starts_on INTEGER NOT NULL DEFAULT 5 CHECK (pay_period_starts_on BETWEEN 0 AND 6),
+  pay_period_weeks INTEGER NOT NULL DEFAULT 1 CHECK (pay_period_weeks IN (1, 2)),
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -127,6 +129,27 @@ CREATE TABLE IF NOT EXISTS goal_entry (
   kind TEXT NOT NULL CHECK (kind IN ('set_aside', 'add', 'withdraw', 'adjust', 'skip')),
   amount_cents INTEGER NOT NULL,
   week_start TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS pay_stub (
+  id TEXT PRIMARY KEY NOT NULL,
+  profile_id TEXT NOT NULL REFERENCES profile(id) ON DELETE CASCADE,
+  period_start TEXT NOT NULL,
+  period_end TEXT NOT NULL,
+  pay_date TEXT,
+  regular_minutes INTEGER NOT NULL,
+  overtime_minutes INTEGER NOT NULL,
+  hourly_rate_cents INTEGER NOT NULL,
+  gross_wages_cents INTEGER NOT NULL,
+  cash_tips_cents INTEGER NOT NULL,
+  card_tips_cents INTEGER NOT NULL,
+  gross_pay_cents INTEGER NOT NULL,
+  other_deductions_cents INTEGER NOT NULL,
+  net_pay_cents INTEGER NOT NULL,
+  taxes_json TEXT NOT NULL,
+  confidence_json TEXT NOT NULL,
+  photo_data_url TEXT,
   created_at TEXT NOT NULL
 );
 

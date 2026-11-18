@@ -51,6 +51,10 @@ function Navigation() {
         <Stack.Screen name="data/delete" options={{ title: "Delete everything" }} />
         <Stack.Screen name="goal/new" options={{ title: "New goal" }} />
         <Stack.Screen name="goal/[id]" options={{ title: "Goal" }} />
+        <Stack.Screen name="stub/scan" options={{ title: "Scan pay stub" }} />
+        <Stack.Screen name="stub/review" options={{ title: "Review stub" }} />
+        <Stack.Screen name="stub/index" options={{ title: "Pay stubs" }} />
+        <Stack.Screen name="stub/[id]" options={{ title: "Pay stub" }} />
       </Stack>
     </>
   );

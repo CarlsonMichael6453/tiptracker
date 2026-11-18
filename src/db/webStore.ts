@@ -80,6 +80,8 @@ function normalizeProfile(profile: Profile): Profile {
     weeklyGoalCents: typeof goal === "number" && Number.isInteger(goal) && goal > 0 ? goal : null,
     showTipJar: profile.showTipJar === false ? false : true,
     tipJarCelebratedWeek: typeof celebrated === "string" && isCivilDate(celebrated) ? celebrated : null,
+    payPeriodStartsOn: profile.payPeriodStartsOn >= 0 && profile.payPeriodStartsOn <= 6 ? profile.payPeriodStartsOn : 5,
+    payPeriodWeeks: profile.payPeriodWeeks === 2 ? 2 : 1,
   };
 }
 
@@ -130,6 +132,7 @@ function parseState(json: string): WebState {
     shifts: data.shifts,
     goals: Array.isArray(data.goals) ? data.goals.map(normalizeGoal).filter((goal): goal is SavingsGoal => goal != null) : [],
     goalEntries: Array.isArray(data.goalEntries) ? data.goalEntries.map(normalizeEntry).filter((entry): entry is GoalEntry => entry != null) : [],
+    payStubs: Array.isArray(data.payStubs) ? data.payStubs : [],
     kv: data.kv && typeof data.kv === "object" ? data.kv : {},
   };
 }

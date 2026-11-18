@@ -15,6 +15,7 @@ import { addDays, compareCivil, formatWeekdayDate, isCivilDate, WEEKDAY_SHORT } 
 import { colorsFor, shouldAnimateBackground } from "./appearance";
 import { useBackgroundMotion } from "./useBackgroundMotion";
 import { SceneBackground } from "./SceneBackground";
+import { ScanButton } from "./ScanButton";
 import { TipJar } from "./TipJar";
 import { useTheme } from "./theme";
 
@@ -53,7 +54,8 @@ export function Screen({
     >
       <SceneBackground settings={appearance} animate={animate} />
       {tipJar ? (
-        <View style={{ alignItems: "flex-end", paddingRight: 16, paddingTop: 4, zIndex: 2 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingTop: 4, zIndex: 2 }}>
+          <ScanButton />
           <TipJar />
         </View>
       ) : null}

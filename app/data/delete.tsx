@@ -23,7 +23,7 @@ export default function DeleteData() {
       <Card>
         <Text style={{ color: palette.text, fontSize: 18, lineHeight: 26 }}>
           This removes {counts?.profiles ?? "…"} {counts?.profiles === 1 ? "profile" : "profiles"}, {counts?.shifts ?? "…"}{" "}
-          {counts?.shifts === 1 ? "shift" : "shifts"}, and every savings goal from this phone. Tip Tracker does not have a copy.
+          {counts?.shifts === 1 ? "shift" : "shifts"}, every savings goal, and every pay stub from this phone. Tip Tracker does not have a copy.
         </Text>
       </Card>
       <Button
