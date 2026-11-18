@@ -57,6 +57,11 @@ export type Profile = {
   doubleThresholdMinutes: number;
   lastRoleId: string | null;
   appearance: AppearanceSettings;
+  /** Weekly take-home goal in cents. Null until they set one. */
+  weeklyGoalCents: number | null;
+  showTipJar: boolean;
+  /** Week-start date of the last 100% celebration, so it plays once per week. */
+  tipJarCelebratedWeek: string | null;
   createdAt: string;
   updatedAt: string;
 };
