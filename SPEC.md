@@ -212,6 +212,21 @@ A small jar in the top-right of the main tabs. It fills toward the weekly take-h
 - The fill animates. If the system asks for less motion, the level changes without animation.
 - The first time the jar reaches the goal in a week, a short sparkle plays once. The same week does not celebrate again. Less motion skips the sparkle and still counts the week as celebrated.
 - Settings has “Show tip jar”, on by default, saved on the profile. Off hides the icon. The pace line on Home stays.
+- A camera button in the top-left of the same screens opens Scan pay stub. It is the mirror of the jar. The label is “Scan pay stub.”
+
+### 5.2.3 Pay stubs
+
+He can take a photo, choose a photo, or import a PDF. On the web build, a photo is read in the browser and a PDF’s text is read in the browser. Neither file is uploaded. A later iOS or Android build can swap that reader for on-device Vision or ML Kit without changing the review screen.
+
+The first parser is tuned for a Darden / Olive Garden PeopleSoft (KrowD) stub, and a plainly labeled stub still works. The review screen is always shown. Weak reads are highlighted. Nothing is saved until he confirms.
+
+Fields: pay period start and end, pay date, regular hours, overtime hours, hourly rate, gross wages, declared cash tips, charged or card tips, gross pay, each tax line (federal income, Social Security, Medicare, state, local, and a transit tax such as Oregon’s statewide transit tax), other deductions, and net pay.
+
+The result lists tax dollars, each tax line, tax as a percent of gross, other deductions, and net. It then compares the stub with logged shifts in that pay period. The pay period is its own setting: a start weekday and weekly or every two weeks. It is not the Wednesday dashboard week. Darden’s weekly Friday payday is the default (period starts Friday).
+
+Hours, rate times hours versus gross wages (overtime at time and a half), card tips, and declared cash tips are compared. A gap past a quarter hour or $5 is spelled out, for example “Stub shows 31.5 hrs; you logged 34.0: 2.5 hrs may be missing (about $41.25)” or “Card tips on stub are $42 lower than logged.” Net is after taxes and deductions. Cash tips he already kept are not in the deposit. The screen says this is a personal record, not tax or legal advice, and to ask a manager or payroll if something looks off.
+
+Saved stubs stay on the profile, with an optional photo. There is a list, a delete for one stub, and delete-all removes them.
 - Below the weekly jar, the sheet lists savings goals. Short-term bars, then long-term bars. That part is section 5.2.2.
 
 ### 5.2.2 Savings goals

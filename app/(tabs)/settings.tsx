@@ -26,6 +26,8 @@ export default function Settings() {
   const [name, setName] = useState("");
   const [wage, setWage] = useState("");
   const [weekStartsOn, setWeekStartsOn] = useState(3);
+  const [payStartsOn, setPayStartsOn] = useState(5);
+  const [payWeeks, setPayWeeks] = useState<1 | 2>(1);
   const [cutoff, setCutoff] = useState(16 * 60);
   const [threshold, setThreshold] = useState(8 * 60);
   const [errors, setErrors] = useState<string[]>([]);
@@ -36,6 +38,8 @@ export default function Settings() {
     setName(activeProfile.name);
     setWage(formatMoneyInput(activeProfile.defaultWageCents));
     setWeekStartsOn(activeProfile.weekStartsOn);
+    setPayStartsOn(activeProfile.payPeriodStartsOn);
+    setPayWeeks(activeProfile.payPeriodWeeks);
     setCutoff(activeProfile.lunchCutoffMinutes);
     setThreshold(activeProfile.doubleThresholdMinutes);
   }, [activeProfile]);
@@ -67,6 +71,8 @@ export default function Settings() {
       name: trimmed,
       defaultWageCents: parsed.cents,
       weekStartsOn,
+      payPeriodStartsOn: payStartsOn,
+      payPeriodWeeks: payWeeks,
       lunchCutoffMinutes: cutoff,
       doubleThresholdMinutes: threshold,
     });
@@ -141,6 +147,17 @@ export default function Settings() {
         </View>
         <Text style={{ color: palette.muted, fontWeight: "600" }}>Week starts on</Text>
         <WeekStartPicker value={weekStartsOn} onChange={setWeekStartsOn} />
+        <Text style={{ color: palette.muted, fontWeight: "600" }}>Pay period starts on</Text>
+        <Text style={{ color: palette.faint, fontSize: 13 }}>Separate from the week above. A weekly Friday payday often starts on Friday.</Text>
+        <WeekStartPicker value={payStartsOn} onChange={setPayStartsOn} />
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Pay every week" onPress={() => setPayWeeks(1)} style={{ flex: 1, minHeight: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: payWeeks === 1 ? palette.primary : palette.card, borderWidth: 1, borderColor: palette.line }}>
+            <Text style={{ color: payWeeks === 1 ? palette.onPrimary : palette.text, fontWeight: "700" }}>Every week</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel="Pay every two weeks" onPress={() => setPayWeeks(2)} style={{ flex: 1, minHeight: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: payWeeks === 2 ? palette.primary : palette.card, borderWidth: 1, borderColor: palette.line }}>
+            <Text style={{ color: payWeeks === 2 ? palette.onPrimary : palette.text, fontWeight: "700" }}>Every two weeks</Text>
+          </Pressable>
+        </View>
         <Stepper
           label="Lunch cutoff"
           value={formatClock(cutoff)}

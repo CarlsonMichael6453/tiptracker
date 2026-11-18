@@ -68,6 +68,8 @@ export function createProfile(
       weeklyGoalCents: null,
       showTipJar: true,
       tipJarCelebratedWeek: null,
+      payPeriodStartsOn: 5,
+      payPeriodWeeks: 1,
       createdAt: created,
       updatedAt: created,
     });
@@ -80,7 +82,7 @@ export function createProfile(
 export function updateProfile(
   db: WebDatabase,
   id: string,
-  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes" | "appearance" | "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek">>,
+  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes" | "appearance" | "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek" | "payPeriodStartsOn" | "payPeriodWeeks">>,
 ): Promise<void> {
   return db.update((state) => {
     const current = state.profiles.find((profile) => profile.id === id);
@@ -94,6 +96,8 @@ export function updateProfile(
     if ("weeklyGoalCents" in patch) current.weeklyGoalCents = patch.weeklyGoalCents && patch.weeklyGoalCents > 0 ? patch.weeklyGoalCents : null;
     if (patch.showTipJar != null) current.showTipJar = patch.showTipJar;
     if ("tipJarCelebratedWeek" in patch) current.tipJarCelebratedWeek = patch.tipJarCelebratedWeek ?? null;
+    if (patch.payPeriodStartsOn != null) current.payPeriodStartsOn = patch.payPeriodStartsOn;
+    if (patch.payPeriodWeeks === 1 || patch.payPeriodWeeks === 2) current.payPeriodWeeks = patch.payPeriodWeeks;
     current.updatedAt = nowIso();
   });
 }
@@ -106,6 +110,7 @@ export function deleteProfile(db: WebDatabase, id: string): Promise<void> {
     state.shifts = state.shifts.filter((shift) => shift.profileId !== id);
     state.goals = (state.goals ?? []).filter((goal) => goal.profileId !== id);
     state.goalEntries = (state.goalEntries ?? []).filter((entry) => !removed.has(entry.goalId));
+    state.payStubs = (state.payStubs ?? []).filter((stub) => stub.profileId !== id);
     if (state.kv.active_profile_id === id) {
       const next = state.profiles.slice().sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1))[0];
       if (next) state.kv.active_profile_id = next.id;
@@ -127,6 +132,7 @@ export function deleteAllData(db: WebDatabase): Promise<void> {
     state.shifts = [];
     state.goals = [];
     state.goalEntries = [];
+    state.payStubs = [];
     delete state.kv.active_profile_id;
   });
 }
