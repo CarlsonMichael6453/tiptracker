@@ -5,6 +5,8 @@ import { compareStubToShifts, formatHours, hoursToMinutes, isLowConfidence, pars
 import { speakMoney } from "../../src/calc/tipJar";
 import { parseMoney } from "../../src/calc/money";
 import { listShifts } from "../../src/repo/repository";
+import { requestReviewMoment } from "../../src/feedback/reviewBus";
+import { shouldAskAfterCleanStub } from "../../src/feedback/message";
 import { createPayStub } from "../../src/repo/payStubs";
 import { peekPendingScan } from "../../src/scan/pending";
 import { useApp } from "../../src/state/AppState";
@@ -66,6 +68,7 @@ export default function ReviewStub() {
       photoDataUrl: keepPhoto ? pending?.photoDataUrl ?? null : null,
     });
     router.replace(`/stub/${id}`);
+    if (shouldAskAfterCleanStub(compared.mismatches.length)) requestReviewMoment("stub");
   };
 
   if (!pending) {

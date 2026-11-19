@@ -129,6 +129,13 @@ export default function Settings() {
     <Screen tipJar>
       <Title>Settings</Title>
       <Card>
+        <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>Support</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="Send feedback" onPress={() => router.push("/feedback")} style={{ minHeight: 44, justifyContent: "center" }}>
+          <Text style={{ color: palette.text, fontWeight: "700", fontSize: 17 }}>Send feedback</Text>
+          <Text style={{ color: palette.muted, fontSize: 13 }}>A rating and a note. Your shifts stay on this device.</Text>
+        </Pressable>
+      </Card>
+      <Card>
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>This profile</Text>
         <Field label="Name" value={name} keyboard="default" onChangeText={setName} />
         <Field label="Default hourly wage" value={wage} onChangeText={setWage} hint="New roles inherit this. Saved shifts keep their own wage." />
