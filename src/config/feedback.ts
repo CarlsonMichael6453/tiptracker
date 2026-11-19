@@ -1,5 +1,5 @@
 /**
  * Where Send feedback mail goes.
- * Michael has not picked an address yet. Change this one line when he does.
+ * This is the only place the address is set.
  */
-export const FEEDBACK_EMAIL = "feedback@example.com";
+export const FEEDBACK_EMAIL = "bykeh1sy@mail.grokbot.com";

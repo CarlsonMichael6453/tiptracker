@@ -401,7 +401,7 @@ Directly under the totals, for the selected range. Specified in section 8. Custo
 
 **Support**
 
-- Send feedback, near the top. A rating from 1 to 5, a note, an optional reply-to email, and Feedback or Report a bug. Bug changes the prompt to “What happened? What did you expect?” Submit opens the mail app with a prefilled message. On the web, if mail doesn’t open, he can copy the note. The address is the single value `FEEDBACK_EMAIL` in `src/config/feedback.ts`. It is a placeholder until Michael picks the inbox.
+- Send feedback, near the top. A rating from 1 to 5, a note, an optional reply-to email, and Feedback or Report a bug. Bug changes the prompt to “What happened? What did you expect?” Submit opens the mail app with a prefilled message. On the web, if mail doesn’t open, he can copy the note. The address is the single value `FEEDBACK_EMAIL` in `src/config/feedback.ts`, set to bykeh1sy@mail.grokbot.com.
 - The message includes the app version and the platform, device, and OS, and shows that line before he sends it. It never includes shifts, tips, or goals.
 - A store review is asked only after a good moment: the weekly jar fills, the 10th shift is saved, or a pay stub checks out with no mismatch. Not at launch and not while he is typing a shift. At most once every 90 days, and at most 3 times. Web skips it. “Not really” opens Send feedback.
 
