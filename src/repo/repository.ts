@@ -148,6 +148,8 @@ export async function deleteAllData(db: AppDatabase): Promise<void> {
   await db.withTransactionAsync(async () => {
     await db.runAsync("DELETE FROM profile");
     await db.runAsync("DELETE FROM app_kv WHERE key = ?", "active_profile_id");
+    await db.runAsync("DELETE FROM app_kv WHERE key = ?", "review_last_asked");
+    await db.runAsync("DELETE FROM app_kv WHERE key = ?", "review_ask_count");
   });
 }
 

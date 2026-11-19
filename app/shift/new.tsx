@@ -2,7 +2,9 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ShiftForm } from "../../src/features/shift/ShiftForm";
 import type { Role } from "../../src/domain/types";
-import { listRoles, saveNewShift } from "../../src/repo/repository";
+import { requestReviewMoment } from "../../src/feedback/reviewBus";
+import { shouldAskAfterShiftCount } from "../../src/feedback/message";
+import { countShifts, listRoles, saveNewShift } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
 import { Muted, Screen } from "../../src/ui/components";
 
@@ -33,8 +35,10 @@ export default function NewShift() {
       submitLabel="Save"
       onSubmit={async (write) => {
         const id = await saveNewShift(db, write);
+        const count = await countShifts(db, activeProfile.id);
         await reload();
         router.replace(`/shift/${id}`);
+        if (shouldAskAfterShiftCount(count)) requestReviewMoment("shift");
       }}
     />
   );

@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Text, View } from "react-native";
 import { AppProvider, useApp } from "../src/state/AppState";
+import { ReviewPrompt } from "../src/ui/ReviewPrompt";
 import { ThemeProvider, useTheme } from "../src/ui/theme";
 
 export default function RootLayout() {
@@ -30,6 +31,7 @@ function Navigation() {
   return (
     <>
       <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+      <ReviewPrompt />
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: palette.card },
@@ -55,6 +57,7 @@ function Navigation() {
         <Stack.Screen name="stub/review" options={{ title: "Review stub" }} />
         <Stack.Screen name="stub/index" options={{ title: "Pay stubs" }} />
         <Stack.Screen name="stub/[id]" options={{ title: "Pay stub" }} />
+        <Stack.Screen name="feedback" options={{ title: "Send feedback" }} />
       </Stack>
     </>
   );

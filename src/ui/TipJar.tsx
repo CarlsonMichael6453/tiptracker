@@ -5,6 +5,7 @@ import { todayCivil } from "../calc/dates";
 import { formatMoneyInput } from "../calc/format";
 import { parseMoney } from "../calc/money";
 import { paceReport, speakMoney, type PaceShift } from "../calc/tipJar";
+import { requestReviewMoment } from "../feedback/reviewBus";
 import { listShifts } from "../repo/repository";
 import { useApp } from "../state/AppState";
 import { SavingsPanel } from "./SavingsGoals";
@@ -58,6 +59,7 @@ export function TipJar() {
     if (!activeProfile?.showTipJar || !report?.progress.met) return;
     if (activeProfile.tipJarCelebratedWeek === report.weekStart) return;
     if (!reduceMotion) setBurst(true);
+    requestReviewMoment("jar");
     void saveTipJar({ tipJarCelebratedWeek: report.weekStart });
   }, [activeProfile, reduceMotion, report, saveTipJar]);
 

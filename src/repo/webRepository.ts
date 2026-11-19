@@ -134,6 +134,8 @@ export function deleteAllData(db: WebDatabase): Promise<void> {
     state.goalEntries = [];
     state.payStubs = [];
     delete state.kv.active_profile_id;
+    delete state.kv.review_last_asked;
+    delete state.kv.review_ask_count;
   });
 }
 
