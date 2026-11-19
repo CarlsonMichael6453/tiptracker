@@ -7,6 +7,7 @@ import {
   shouldAskAfterShiftCount,
 } from "../src/feedback/message";
 import { includedLine } from "../src/feedback/message";
+import { FEEDBACK_EMAIL } from "../src/config/feedback";
 
 describe("feedback mail", () => {
   const included = includedLine({
@@ -17,7 +18,7 @@ describe("feedback mail", () => {
   });
 
   test("builds a versioned subject and a body with no earnings", () => {
-    const mail = buildFeedbackMail("feedback@example.com", {
+    const mail = buildFeedbackMail(FEEDBACK_EMAIL, {
       kind: "feedback",
       rating: 4,
       message: "The jar is easy to find.",
@@ -33,14 +34,15 @@ describe("feedback mail", () => {
     expect(mail.body).toContain("Included: Tip Tracker v1.0.0 · ios · iPhone · iOS 17.5");
     expect(mail.body).not.toContain("take-home");
     expect(mail.body).not.toContain("$");
-    expect(mail.url.startsWith("mailto:feedback@example.com?")).toBe(true);
+    expect(mail.url.startsWith(`mailto:${FEEDBACK_EMAIL}?`)).toBe(true);
+    expect(FEEDBACK_EMAIL).toBe("bykeh1sy@mail.grokbot.com");
     expect(decodeURIComponent(mail.url)).toContain(mail.subject);
   });
 
   test("a bug report changes the subject and the prompt", () => {
     expect(feedbackPlaceholder("bug")).toBe("What happened? What did you expect?");
     expect(feedbackPlaceholder("feedback")).not.toBe(feedbackPlaceholder("bug"));
-    const mail = buildFeedbackMail("feedback@example.com", {
+    const mail = buildFeedbackMail(FEEDBACK_EMAIL, {
       kind: "bug",
       rating: 2,
       message: "The save button did nothing.",
