@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Platform, Pressable, Switch, Text, View } from "react-native";
+import { Alert, Platform, Pressable, Switch, View } from "react-native";
 import Constants from "expo-constants";
 import { formatClock, formatHoursPhrase, formatMoneyInput } from "../../src/calc/format";
 import { parseMoney } from "../../src/calc/money";
@@ -19,6 +19,7 @@ import { AppearanceType } from "../../src/ui/AppearanceType";
 import { defaultAppearance } from "../../src/ui/appearance";
 import { Button, Card, ErrorList, Field, Muted, Screen, Title, WeekStartPicker } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
+import { Text } from "../../src/ui/text";
 
 export default function Settings() {
   const { db, activeProfile, profiles, reload, setActive, saveProfileAppearance, saveTipJar } = useApp();

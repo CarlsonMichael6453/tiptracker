@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, type ReactNode } from "react";
-import { Platform, Text, TextInput, View } from "react-native";
+import { Platform, View } from "react-native";
 import { useApp } from "../state/AppState";
 import { relativeLuminance } from "./contrast";
 import { buildPalette, colorsFor, defaultAppearance, isDecorative, prefersDarkUi, type AppearanceSettings } from "./appearance";
@@ -13,7 +13,10 @@ type ThemeValue = {
   scheme: "light" | "dark";
   decorative: boolean;
   appearance: AppearanceSettings;
-  headingFont?: string;
+  /** Regular face for navigation chrome. Undefined means the system font. */
+  fontFamily?: string;
+  /** Bold face for tab labels and screen titles. */
+  boldFontFamily?: string;
 };
 
 const ThemeContext = createContext<ThemeValue>({
@@ -33,11 +36,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const scheme = named.palette ? (relativeLuminance(palette.bg) < 0.4 ? "dark" : "light") : prefersDarkUi(appearance) ? "dark" : "light";
   const decorative = !named.palette && isDecorative(appearance.style);
   useEffect(() => {
-    const style = fonts.body ? { fontFamily: fonts.body } : undefined;
-    const text = Text as unknown as { defaultProps?: { style?: object } };
-    const input = TextInput as unknown as { defaultProps?: { style?: object } };
-    text.defaultProps = { ...text.defaultProps, style };
-    input.defaultProps = { ...input.defaultProps, style };
     if (Platform.OS === "web" && typeof document !== "undefined") {
       let node = document.getElementById("tiptracker-font");
       if (!node) {
@@ -45,11 +43,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         node.id = "tiptracker-font";
         document.head.appendChild(node);
       }
-      node.textContent = fonts.body ? `#root, #root input, #root textarea { font-family: ${fonts.body}, sans-serif; }` : "";
+      const family = fonts.body ? `${fonts.body}, sans-serif` : "";
+      node.textContent = family
+        ? `#root, #root button, #root input, #root textarea, #root [role="tab"] { font-family: ${family}; }`
+        : "";
     }
   }, [fonts.body]);
   return (
-    <ThemeContext.Provider value={{ palette, scheme, decorative, appearance, headingFont: fonts.heading }}>
+    <ThemeContext.Provider value={{ palette, scheme, decorative, appearance, fontFamily: fonts.body, boldFontFamily: fonts.bold }}>
       <View style={{ flex: 1, backgroundColor: named.palette ? palette.bg : colorsFor(appearance)[0] }}>
         {decorative ? <SceneBackground settings={appearance} /> : null}
         <View style={{ flex: 1 }}>{children}</View>

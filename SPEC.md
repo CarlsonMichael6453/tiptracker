@@ -460,9 +460,9 @@ Unlocked while testing (`PRO_UNLOCKED_FOR_TESTING` in `src/config/pro.ts`). The 
 
 On the Appearance card, under the existing patterns.
 
-**Fonts**, OFL faces loaded with `@expo-google-fonts`. Professional: System default, Inter, Roboto, Source Serif 4, IBM Plex Sans. Fun: Nunito, Baloo 2, Fredoka, Pacifico, Comic Neue. Pacifico is headings only. Body text stays in Nunito so a paragraph stays readable. Each chip previews its own face.
+**Fonts**, one list, OFL faces loaded with `@expo-google-fonts`: System default, Inter, Roboto, Source Serif 4, IBM Plex Sans, Nunito, Baloo 2, Fredoka, Comic Neue. Each chip previews its own face. The choice applies to every shared text and text field, the tab labels, and the navigation titles. Bold weights use that face’s bold cut. Pacifico is not offered, because a script face makes dollar amounts hard to read. There is no hex color field.
 
-**Color themes**. Default follows System light/dark. Professional: Classic Light, Slate Dark, Navy, Forest. Fun: Sunset, Mint, Grape, Neon Night, Bubblegum. Each swatch is the theme’s own colors. Body text on the card and the background meets WCAG AA. The choice is stored on the profile as `font` and `colorTheme` and applied through the theme provider, including a web font-family rule.
+**Color themes**, one list. System light/dark, Classic Light, Slate Dark, Navy, Forest, Sunset, Mint, Grape, Neon Night, Bubblegum. Each swatch is the theme’s own colors. Body text on the card and the background meets WCAG AA. The choice is stored on the profile as `font` and `colorTheme`.
 
 ---
 

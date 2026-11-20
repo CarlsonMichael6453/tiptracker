@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, Text, View } from "react-native";
+import { Alert, View } from "react-native";
 import { formatPercentInput } from "../../calc/format";
 import { formatMoneyInput } from "../../calc/format";
 import { parseMoney, parsePercent } from "../../calc/money";
@@ -8,6 +8,7 @@ import type { Posture, Role } from "../../domain/types";
 import type { RoleTipOutWrite } from "../../repo/repository";
 import { Button, Chips, ErrorList, Field, Screen, Segment } from "../../ui/components";
 import { useTheme } from "../../ui/theme";
+import { Text } from "../../ui/text";
 
 type Line = { key: string; label: string; amountText: string; percentText: string };
 

@@ -2,7 +2,8 @@ import "react-native-gesture-handler";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "../src/ui/text";
 import { AppProvider, useApp } from "../src/state/AppState";
 import { ReviewPrompt } from "../src/ui/ReviewPrompt";
 import { ThemeProvider, useTheme } from "../src/ui/theme";
@@ -27,7 +28,8 @@ function Gate() {
 }
 
 function Navigation() {
-  const { palette, scheme } = useTheme();
+  const { palette, scheme, fontFamily, boldFontFamily } = useTheme();
+  const titleFont = boldFontFamily ?? fontFamily;
   return (
     <>
       <StatusBar style={scheme === "dark" ? "light" : "dark"} />
@@ -36,7 +38,10 @@ function Navigation() {
         screenOptions={{
           headerStyle: { backgroundColor: palette.card },
           headerTintColor: palette.text,
-          headerTitleStyle: { fontWeight: "700" },
+          headerTitleStyle: { fontWeight: "700", fontFamily: titleFont },
+          headerTitle: ({ children, tintColor }) => (
+            <Text style={{ color: tintColor ?? palette.text, fontSize: 17, fontWeight: "700" }}>{children}</Text>
+          ),
           headerShadowVisible: false,
           contentStyle: { backgroundColor: "transparent" },
         }}

@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import type { BudgetLedger, CashChip } from "../../src/budget/types";
 import {
@@ -28,6 +28,7 @@ import { listShifts } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
 import { Button, Card, Chips, Field, Muted, Screen, Segment, Title } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
+import { Text } from "../../src/ui/text";
 
 export default function BudgetScreen() {
   const { db, activeProfile } = useApp();

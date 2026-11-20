@@ -3,8 +3,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
   type KeyboardTypeOptions,
   type TextStyle,
@@ -17,6 +15,7 @@ import { useBackgroundMotion } from "./useBackgroundMotion";
 import { SceneBackground } from "./SceneBackground";
 import { ScanButton } from "./ScanButton";
 import { TipJar } from "./TipJar";
+import { Text, TextInput } from "./text";
 import { useTheme } from "./theme";
 
 export function Screen({
@@ -66,7 +65,7 @@ export function Screen({
 }
 
 export function Title({ children }: { children: ReactNode }) {
-  const { palette, decorative, headingFont } = useTheme();
+  const { palette, decorative } = useTheme();
   return (
     <Text
       style={[
@@ -77,7 +76,6 @@ export function Title({ children }: { children: ReactNode }) {
           alignSelf: "flex-start",
           paddingHorizontal: decorative ? 10 : 0,
           borderRadius: decorative ? 10 : 0,
-          fontFamily: headingFont,
         },
       ]}
     >

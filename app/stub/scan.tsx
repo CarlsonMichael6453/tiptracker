@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Platform, Pressable, Text } from "react-native";
+import { Platform, Pressable } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { SAMPLE_KROWD_STUB } from "../../src/calc/payStub";
@@ -8,6 +8,7 @@ import { extractImageText, extractPdfText } from "../../src/scan/extract";
 import { setPendingScan } from "../../src/scan/pending";
 import { Screen } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
+import { Text } from "../../src/ui/text";
 
 export default function ScanStub() {
   const { palette } = useTheme();

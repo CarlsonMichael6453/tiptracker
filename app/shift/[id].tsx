@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert, Text, View } from "react-native";
+import { Alert, View } from "react-native";
 import { doubleSource, mealSource, resolveDouble, resolveMeal } from "../../src/calc/classify";
 import { formatClock, formatHoursPhrase, formatMoney, formatPercent, formatRate, formatTipPercent } from "../../src/calc/format";
 import { formatWeekdayDate } from "../../src/calc/dates";
@@ -11,6 +11,7 @@ import { deleteShift, getShift } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
 import { Button, Card, Muted, Screen, Title } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
+import { Text } from "../../src/ui/text";
 
 export default function ShiftDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();

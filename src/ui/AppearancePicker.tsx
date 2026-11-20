@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Pressable, Switch, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { useState } from "react";
+import { Pressable, Switch, useWindowDimensions, View } from "react-native";
 import {
   APPEARANCE_STYLES,
   COLOR_ROWS,
@@ -19,8 +19,8 @@ import {
   type ColorPair,
   type ThemePreset,
 } from "./appearance";
-import { normalizeHex } from "./contrast";
 import { PreviewTile } from "./SceneBackground";
+import { Text } from "./text";
 import { useTheme } from "./theme";
 
 export function AppearancePicker({
@@ -146,8 +146,6 @@ function ColorEditor({
   const pair = colorsFor(value);
   const [slot, setSlot] = useState<0 | 1>(0);
   const active = pair[slot];
-  const [draft, setDraft] = useState(active);
-  useEffect(() => setDraft(active), [active]);
 
   const paint = (color: string, remember: boolean) => {
     const nextPair: ColorPair = slot === 0 ? [color, pair[1]] : [pair[0], color];
@@ -218,30 +216,6 @@ function ColorEditor({
           </View>
         </View>
       ))}
-      <TextInput
-        value={draft}
-        onChangeText={(text) => {
-          setDraft(text);
-          const next = normalizeHex(text);
-          if (!next) return;
-          paint(next, text.trim().length >= 7);
-        }}
-        autoCapitalize="characters"
-        autoCorrect={false}
-        placeholder="#24301A"
-        placeholderTextColor={palette.faint}
-        accessibilityLabel="Hex color"
-        style={{
-          minHeight: 44,
-          borderWidth: 1,
-          borderColor: palette.line,
-          borderRadius: 12,
-          paddingHorizontal: 12,
-          color: palette.text,
-          backgroundColor: palette.input,
-          fontSize: 16,
-        }}
-      />
     </View>
   );
 }

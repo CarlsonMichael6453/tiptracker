@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, Pressable, Text } from "react-native";
+import { Alert, Pressable } from "react-native";
 import { formatHours } from "../../src/calc/payStub";
 import { speakMoney } from "../../src/calc/tipJar";
 import type { PayStub } from "../../src/domain/types";
@@ -8,6 +8,7 @@ import { deletePayStub, getPayStub } from "../../src/repo/payStubs";
 import { useApp } from "../../src/state/AppState";
 import { Screen } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
+import { Text } from "../../src/ui/text";
 
 export default function PayStubDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();

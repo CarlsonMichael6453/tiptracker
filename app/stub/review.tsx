@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { compareStubToShifts, formatHours, hoursToMinutes, isLowConfidence, parsePayStub, taxTotalCents, type StubDraft } from "../../src/calc/payStub";
 import { speakMoney } from "../../src/calc/tipJar";
 import { parseMoney } from "../../src/calc/money";
@@ -14,6 +14,7 @@ import { Screen } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
 import { useEffect } from "react";
 import type { LoggedSlice } from "../../src/calc/payStub";
+import { Text, TextInput } from "../../src/ui/text";
 
 export default function ReviewStub() {
   const pending = peekPendingScan();

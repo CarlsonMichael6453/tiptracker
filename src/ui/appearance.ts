@@ -1,4 +1,5 @@
 import type { AppearanceSettings, AppearanceStyle, ColorPair, DecorativeStyle } from "../domain/types";
+import { COLOR_THEME_IDS, FONT_IDS } from "./colorThemes";
 import type { Palette } from "./themePalette";
 import { darkPalette, lightPalette } from "./themePalette";
 import { mixHex, normalizeHex, pickTextColor, relativeLuminance } from "./contrast";
@@ -197,8 +198,8 @@ export function parseAppearance(value: unknown): AppearanceSettings {
     ...pairs,
     recent: parseRecent(raw.recent),
     animateBackground: raw.animateBackground === true,
-    font: typeof raw.font === "string" ? raw.font : "system",
-    colorTheme: typeof raw.colorTheme === "string" ? raw.colorTheme : "system",
+    font: typeof raw.font === "string" && (FONT_IDS as readonly string[]).includes(raw.font) ? raw.font : "system",
+    colorTheme: typeof raw.colorTheme === "string" && (COLOR_THEME_IDS as readonly string[]).includes(raw.colorTheme) ? raw.colorTheme : "system",
   };
 }
 

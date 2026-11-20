@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Text } from "react-native";
+import { Text } from "../../src/ui/text";
 import { countAll, deleteAllData } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
 import { Button, Card, Screen } from "../../src/ui/components";

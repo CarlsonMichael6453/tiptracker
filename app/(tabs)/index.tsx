@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { formatHoursPhrase, formatMoney, formatRate } from "../../src/calc/format";
 import { formatWeekdayDate, todayCivil, weekRange } from "../../src/calc/dates";
 import { periodTotals } from "../../src/calc/period";
@@ -10,6 +10,7 @@ import { listShiftsInRange } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
 import { Button, Card, Muted, Screen, Title } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
+import { Text } from "../../src/ui/text";
 
 export default function Home() {
   const { db, activeProfile, profiles, setActive } = useApp();

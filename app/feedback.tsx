@@ -1,11 +1,12 @@
 import { useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { Linking, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { Linking, Platform, Pressable, View } from "react-native";
 import { FEEDBACK_EMAIL } from "../src/config/feedback";
 import { readDeviceContext } from "../src/feedback/deviceInfo";
 import { buildFeedbackMail, feedbackPlaceholder, includedLine, type FeedbackKind } from "../src/feedback/message";
 import { Screen } from "../src/ui/components";
 import { useTheme } from "../src/ui/theme";
+import { Text, TextInput } from "../src/ui/text";
 
 export default function FeedbackScreen() {
   const params = useLocalSearchParams<{ kind?: string }>();

@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Pressable, SectionList, Text, View } from "react-native";
+import { Pressable, SectionList, View } from "react-native";
 import { formatHoursCompact, formatMoney } from "../../src/calc/format";
 import { formatMonthYear, formatWeekdayDate } from "../../src/calc/dates";
 import type { ShiftRecord } from "../../src/domain/types";
@@ -8,6 +8,7 @@ import { listShifts } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
 import { Muted, Screen } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
+import { Text } from "../../src/ui/text";
 
 export default function History() {
   const { db, activeProfile } = useApp();
