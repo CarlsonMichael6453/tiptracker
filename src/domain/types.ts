@@ -26,6 +26,10 @@ export type AppearanceSettings = {
   recent: string[];
   /** Moves only the backdrop. Off until this profile turns it on. */
   animateBackground: boolean;
+  /** Open-source font. System is the default. */
+  font: string;
+  /** Named color theme. System keeps light/dark and the existing backgrounds. */
+  colorTheme: string;
 } & Record<DecorativeStyle, ColorPair>;
 
 export type GoalHorizon = "short" | "long";

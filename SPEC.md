@@ -164,7 +164,7 @@ No analytics, crash reporter, ads, or in-app purchases in v1. No network permiss
 
 ## 5. Screens
 
-Bottom tabs for the active profile: **Home · History · Summary · Settings**.
+Bottom tabs for the active profile: **Home · History · Summary · Budget · Settings**.
 
 Log shift is a full-screen form, not a tab. Edit uses the same form. There is no all-profiles view in v1.
 
@@ -427,9 +427,42 @@ Directly under the totals, for the selected range. Specified in section 8. Custo
 
 **App**
 
-- Appearance: System (default), Light, Dark.
+- Appearance: System (default), Light, Dark, plus the patterns and presets already on this screen. Font and color theme are saved on the profile (section 5.9).
 - About: version, plus “Tip Tracker is a personal record of what you enter. It is not tax, payroll, or legal advice.” And the backup sentence from section 9.
 - Delete all data. A separate screen that states how many profiles and shifts will be removed, then a second button labeled “Delete everything.” Irreversible. Returns to first launch.
+
+### 5.8 Budget
+
+A tab for irregular tipped weeks. The ledger stays on the device, one JSON row per profile.
+
+**Free**
+
+- Baseline. Slow-week average (25th percentile of recent weeks’ take-home) or a floor he types. One sentence says which one is in use. Surplus above the baseline is called out for the buffer or a goal.
+- Bills. Name, amount, and weekly, monthly, or yearly due day. The list marks bills due in the current pay period. Free holds 8.
+- Cash wallet. Cash tips from shifts land here until he marks them deposited. He can add cash by hand.
+- Tax jar. A percent of the week, same idea as a goal set-aside. The card says it is not tax advice.
+- Envelopes. A weekly amount and logged spending. Free holds 6.
+- One number: left after this week’s bills.
+
+**Pro**
+
+Unlocked while testing (`PRO_UNLOCKED_FOR_TESTING` in `src/config/pro.ts`). The plan screen lists $2.99/month, $19.99/year, and $39.99 lifetime and says purchases are not wired up. There is no purchase code.
+
+- Safe to spend this week: income (this week’s take-home, or the baseline when the week is empty) minus bills due, the tax jar, goal set-asides, and what the envelopes still need. “Why this number” shows each line.
+- Cash-flow calendar for the next four weeks, with a short week marked when bills exceed the baseline. A reminder toggle marks the day before a bill. It does not send a notification.
+- Slow-week buffer. Sweep surplus above the baseline. Draw it when the week is short.
+- Sinking funds for a yearly bill, shown as a weekly set-aside.
+- Work expenses (gas, meals, uniforms, mileage) come out of real take-home and the hourly rate.
+- No cap on bills, envelopes, or savings goals. Free still caps goals at 2 when Pro is off.
+- A CSV of bills, spends, and cash he can copy.
+
+### 5.9 Fonts and color themes
+
+On the Appearance card, under the existing patterns.
+
+**Fonts**, OFL faces loaded with `@expo-google-fonts`. Professional: System default, Inter, Roboto, Source Serif 4, IBM Plex Sans. Fun: Nunito, Baloo 2, Fredoka, Pacifico, Comic Neue. Pacifico is headings only. Body text stays in Nunito so a paragraph stays readable. Each chip previews its own face.
+
+**Color themes**. Default follows System light/dark. Professional: Classic Light, Slate Dark, Navy, Forest. Fun: Sunset, Mint, Grape, Neon Night, Bubblegum. Each swatch is the theme’s own colors. Body text on the card and the background meets WCAG AA. The choice is stored on the profile as `font` and `colorTheme` and applied through the theme provider, including a web font-family rule.
 
 ---
 

@@ -147,6 +147,8 @@ export function defaultAppearance(): AppearanceSettings {
     ...DEFAULT_PAIRS,
     recent: [],
     animateBackground: false,
+    font: "system",
+    colorTheme: "system",
   };
 }
 
@@ -195,6 +197,8 @@ export function parseAppearance(value: unknown): AppearanceSettings {
     ...pairs,
     recent: parseRecent(raw.recent),
     animateBackground: raw.animateBackground === true,
+    font: typeof raw.font === "string" ? raw.font : "system",
+    colorTheme: typeof raw.colorTheme === "string" ? raw.colorTheme : "system",
   };
 }
 

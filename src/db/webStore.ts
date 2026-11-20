@@ -133,6 +133,7 @@ function parseState(json: string): WebState {
     goals: Array.isArray(data.goals) ? data.goals.map(normalizeGoal).filter((goal): goal is SavingsGoal => goal != null) : [],
     goalEntries: Array.isArray(data.goalEntries) ? data.goalEntries.map(normalizeEntry).filter((entry): entry is GoalEntry => entry != null) : [],
     payStubs: Array.isArray(data.payStubs) ? data.payStubs : [],
+    budgets: Array.isArray(data.budgets) ? data.budgets : [],
     kv: data.kv && typeof data.kv === "object" ? data.kv : {},
   };
 }
