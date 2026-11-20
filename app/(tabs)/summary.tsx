@@ -1,6 +1,7 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState, type ReactNode } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "../../src/ui/text";
 import { formatHoursPhrase, formatMoney, formatRate } from "../../src/calc/format";
 import {
   daysInclusive,

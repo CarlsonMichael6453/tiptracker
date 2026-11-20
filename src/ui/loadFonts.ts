@@ -6,7 +6,6 @@ import { IBMPlexSans_400Regular, IBMPlexSans_700Bold } from "@expo-google-fonts/
 import { Nunito_400Regular, Nunito_700Bold } from "@expo-google-fonts/nunito";
 import { Baloo2_400Regular, Baloo2_700Bold } from "@expo-google-fonts/baloo-2";
 import { Fredoka_400Regular, Fredoka_700Bold } from "@expo-google-fonts/fredoka";
-import { Pacifico_400Regular } from "@expo-google-fonts/pacifico";
 import { ComicNeue_400Regular, ComicNeue_700Bold } from "@expo-google-fonts/comic-neue";
 
 /** Loads the OFL faces used by Appearance. The app still renders with the system font until they arrive. */
@@ -26,7 +25,6 @@ export function useAppFonts(): boolean {
     Baloo2_700Bold,
     Fredoka_400Regular,
     Fredoka_700Bold,
-    Pacifico_400Regular,
     ComicNeue_400Regular,
     ComicNeue_700Bold,
   });

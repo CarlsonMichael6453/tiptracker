@@ -1,8 +1,9 @@
 import { Tabs } from "expo-router";
+import { Text } from "../../src/ui/text";
 import { useTheme } from "../../src/ui/theme";
 
 export default function TabsLayout() {
-  const { palette } = useTheme();
+  const { palette, fontFamily, boldFontFamily } = useTheme();
   return (
     <Tabs
       screenOptions={{
@@ -11,7 +12,10 @@ export default function TabsLayout() {
         tabBarStyle: { backgroundColor: palette.card, borderTopColor: palette.line, minHeight: 56 },
         tabBarActiveTintColor: palette.accent,
         tabBarInactiveTintColor: palette.faint,
-        tabBarLabelStyle: { fontSize: 13, fontWeight: "700" },
+        tabBarLabelStyle: { fontSize: 13, fontWeight: "700", fontFamily: boldFontFamily ?? fontFamily },
+        tabBarLabel: ({ color, children }) => (
+          <Text style={{ color, fontSize: 13, fontWeight: "700" }}>{children}</Text>
+        ),
         tabBarIcon: () => null,
         tabBarIconStyle: { display: "none", width: 0, height: 0 },
       }}

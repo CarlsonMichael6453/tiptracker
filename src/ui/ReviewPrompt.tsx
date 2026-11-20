@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Modal, Platform, Pressable, Text, View } from "react-native";
+import { Modal, Platform, Pressable, View } from "react-native";
 import { todayCivil } from "../calc/dates";
 import { canAskForReview } from "../feedback/message";
 import { onReviewMoment } from "../feedback/reviewBus";
@@ -8,6 +8,7 @@ import { requestStoreReview } from "../feedback/storeReview";
 import { readReviewRecord, recordReviewAsk } from "../repo/reviewState";
 import { useApp } from "../state/AppState";
 import { useTheme } from "./theme";
+import { Text } from "./text";
 
 /** A rare pre-ask. It never opens on web, at launch, or while a shift form is open. */
 export function ReviewPrompt() {

@@ -10,7 +10,6 @@ export const FONT_IDS = [
   "nunito",
   "baloo",
   "fredoka",
-  "pacifico",
   "comic-neue",
 ] as const;
 
@@ -34,28 +33,27 @@ export type ColorThemeId = (typeof COLOR_THEME_IDS)[number];
 export type FontChoice = {
   id: FontId;
   label: string;
-  group: "professional" | "fun";
+  /** Loaded face for regular text. Undefined keeps the system font. */
   body: string | undefined;
-  heading: string | undefined;
+  /** Loaded face for weight 600 and up. Undefined keeps the system font. */
+  bold: string | undefined;
 };
 
 export const FONT_CHOICES: FontChoice[] = [
-  { id: "system", label: "System default", group: "professional", body: undefined, heading: undefined },
-  { id: "inter", label: "Inter", group: "professional", body: "Inter_400Regular", heading: "Inter_700Bold" },
-  { id: "roboto", label: "Roboto", group: "professional", body: "Roboto_400Regular", heading: "Roboto_700Bold" },
-  { id: "source-serif", label: "Source Serif 4", group: "professional", body: "SourceSerif4_400Regular", heading: "SourceSerif4_700Bold" },
-  { id: "ibm-plex", label: "IBM Plex Sans", group: "professional", body: "IBMPlexSans_400Regular", heading: "IBMPlexSans_700Bold" },
-  { id: "nunito", label: "Nunito", group: "fun", body: "Nunito_400Regular", heading: "Nunito_700Bold" },
-  { id: "baloo", label: "Baloo 2", group: "fun", body: "Baloo2_400Regular", heading: "Baloo2_700Bold" },
-  { id: "fredoka", label: "Fredoka", group: "fun", body: "Fredoka_400Regular", heading: "Fredoka_700Bold" },
-  { id: "pacifico", label: "Pacifico", group: "fun", body: "Nunito_400Regular", heading: "Pacifico_400Regular" },
-  { id: "comic-neue", label: "Comic Neue", group: "fun", body: "ComicNeue_400Regular", heading: "ComicNeue_700Bold" },
+  { id: "system", label: "System default", body: undefined, bold: undefined },
+  { id: "inter", label: "Inter", body: "Inter_400Regular", bold: "Inter_700Bold" },
+  { id: "roboto", label: "Roboto", body: "Roboto_400Regular", bold: "Roboto_700Bold" },
+  { id: "source-serif", label: "Source Serif 4", body: "SourceSerif4_400Regular", bold: "SourceSerif4_700Bold" },
+  { id: "ibm-plex", label: "IBM Plex Sans", body: "IBMPlexSans_400Regular", bold: "IBMPlexSans_700Bold" },
+  { id: "nunito", label: "Nunito", body: "Nunito_400Regular", bold: "Nunito_700Bold" },
+  { id: "baloo", label: "Baloo 2", body: "Baloo2_400Regular", bold: "Baloo2_700Bold" },
+  { id: "fredoka", label: "Fredoka", body: "Fredoka_400Regular", bold: "Fredoka_700Bold" },
+  { id: "comic-neue", label: "Comic Neue", body: "ComicNeue_400Regular", bold: "ComicNeue_700Bold" },
 ];
 
 export type ColorChoice = {
   id: ColorThemeId;
   label: string;
-  group: "professional" | "fun" | "system";
   palette: Palette | null;
 };
 
@@ -186,17 +184,35 @@ const bubblegum = paint(lightPalette(), {
 });
 
 export const COLOR_CHOICES: ColorChoice[] = [
-  { id: "system", label: "System light/dark", group: "system", palette: null },
-  { id: "classic", label: "Classic Light", group: "professional", palette: classic },
-  { id: "slate", label: "Slate Dark", group: "professional", palette: slate },
-  { id: "navy", label: "Navy", group: "professional", palette: navy },
-  { id: "forest", label: "Forest", group: "professional", palette: forest },
-  { id: "sunset", label: "Sunset", group: "fun", palette: sunset },
-  { id: "mint", label: "Mint", group: "fun", palette: mint },
-  { id: "grape", label: "Grape", group: "fun", palette: grape },
-  { id: "neon", label: "Neon Night", group: "fun", palette: neon },
-  { id: "bubblegum", label: "Bubblegum", group: "fun", palette: bubblegum },
+  { id: "system", label: "System light/dark", palette: null },
+  { id: "classic", label: "Classic Light", palette: classic },
+  { id: "slate", label: "Slate Dark", palette: slate },
+  { id: "navy", label: "Navy", palette: navy },
+  { id: "forest", label: "Forest", palette: forest },
+  { id: "sunset", label: "Sunset", palette: sunset },
+  { id: "mint", label: "Mint", palette: mint },
+  { id: "grape", label: "Grape", palette: grape },
+  { id: "neon", label: "Neon Night", palette: neon },
+  { id: "bubblegum", label: "Bubblegum", palette: bubblegum },
 ];
+
+/** Face the shared Text and TextInput components should use. An explicit family wins. */
+export function appliedFontFamily(
+  id: string | undefined,
+  style?: { fontFamily?: string; fontWeight?: string | number } | null,
+): string | undefined {
+  if (style && typeof style.fontFamily === "string" && style.fontFamily.length > 0) return style.fontFamily;
+  const choice = fontChoice(id);
+  if (!choice.body) return undefined;
+  return weightAtLeast(style?.fontWeight, 600) && choice.bold ? choice.bold : choice.body;
+}
+
+function weightAtLeast(weight: string | number | undefined, min: number): boolean {
+  if (weight == null || weight === "normal") return false;
+  if (weight === "bold") return 700 >= min;
+  const numeric = typeof weight === "number" ? weight : Number(weight);
+  return Number.isFinite(numeric) && numeric >= min;
+}
 
 export function fontChoice(id: string | undefined): FontChoice {
   return FONT_CHOICES.find((font) => font.id === id) ?? FONT_CHOICES[0]!;

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, View } from "react-native";
 import { useNavigation } from "expo-router";
 import { formatMoney } from "../../calc/format";
 import { todayCivil } from "../../calc/dates";
@@ -33,6 +33,7 @@ import {
   wageDiffersFromRole,
   type ShiftDraft,
 } from "./model";
+import { Text } from "../../ui/text";
 
 export function ShiftForm({
   profile,

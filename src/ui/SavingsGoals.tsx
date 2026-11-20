@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { todayCivil, weekRange } from "../calc/dates";
 import { formatMoneyInput } from "../calc/format";
 import { goalFill, goalPace, setAsidePending } from "../calc/goals";
@@ -10,6 +10,7 @@ import type { GoalEntry, SavingsGoal } from "../domain/types";
 import { addGoalEntry, listGoalEntries, listGoals } from "../repo/goals";
 import { useApp } from "../state/AppState";
 import { useTheme } from "./theme";
+import { Text, TextInput } from "./text";
 
 export function SavingsPanel({ onNavigate }: { onNavigate?: () => void }) {
   const { db, activeProfile } = useApp();

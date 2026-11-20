@@ -1,12 +1,13 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Pressable, Text } from "react-native";
+import { Pressable } from "react-native";
 import { speakMoney } from "../../src/calc/tipJar";
 import type { PayStub } from "../../src/domain/types";
 import { listPayStubs } from "../../src/repo/payStubs";
 import { useApp } from "../../src/state/AppState";
 import { Screen } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
+import { Text } from "../../src/ui/text";
 
 export default function PayStubList() {
   const { db, activeProfile } = useApp();

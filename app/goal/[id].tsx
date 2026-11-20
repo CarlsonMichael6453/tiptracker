@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, View } from "react-native";
 import { isCivilDate, todayCivil } from "../../src/calc/dates";
 import { formatMoneyInput } from "../../src/calc/format";
 import { goalPace, suggestHorizon, type GoalHorizon } from "../../src/calc/goals";
@@ -11,6 +11,7 @@ import { addGoalEntry, deleteGoal, getGoal, listGoalEntries, updateGoal } from "
 import { useApp } from "../../src/state/AppState";
 import { Screen } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
+import { Text, TextInput } from "../../src/ui/text";
 
 export default function GoalDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();

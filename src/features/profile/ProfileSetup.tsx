@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "../../ui/text";
 import { parseMoney } from "../../calc/money";
 import { DEFAULT_WEEK_STARTS_ON } from "../../calc/classify";
 import { Button, Chips, ErrorList, Field, Screen, Title, WeekStartPicker } from "../../ui/components";

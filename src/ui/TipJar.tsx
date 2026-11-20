@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Easing, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Animated, Easing, Modal, Pressable, ScrollView, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { todayCivil } from "../calc/dates";
 import { formatMoneyInput } from "../calc/format";
@@ -11,6 +11,7 @@ import { useApp } from "../state/AppState";
 import { SavingsPanel } from "./SavingsGoals";
 import { useTheme } from "./theme";
 import { useBackgroundMotion } from "./useBackgroundMotion";
+import { Text, TextInput } from "./text";
 
 const SPARKS = [
   { x: -22, y: -30 },

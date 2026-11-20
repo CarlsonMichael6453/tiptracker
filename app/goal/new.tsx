@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { isCivilDate, todayCivil } from "../../src/calc/dates";
 import { suggestHorizon, type GoalHorizon } from "../../src/calc/goals";
 import { parseMoney } from "../../src/calc/money";
@@ -9,6 +9,7 @@ import { createGoal, listGoals } from "../../src/repo/goals";
 import { useApp } from "../../src/state/AppState";
 import { Screen } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
+import { Text, TextInput } from "../../src/ui/text";
 
 export default function NewGoal() {
   const { db, activeProfile } = useApp();

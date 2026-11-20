@@ -1,4 +1,5 @@
-import { Text } from "react-native";
+import { Text } from "../src/ui/text";
+
 import { PRO_PRICES, PRO_UNLOCKED_FOR_TESTING } from "../src/config/pro";
 import { Screen } from "../src/ui/components";
 import { useTheme } from "../src/ui/theme";
