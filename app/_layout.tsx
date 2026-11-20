@@ -58,6 +58,7 @@ function Navigation() {
         <Stack.Screen name="stub/index" options={{ title: "Pay stubs" }} />
         <Stack.Screen name="stub/[id]" options={{ title: "Pay stub" }} />
         <Stack.Screen name="feedback" options={{ title: "Send feedback" }} />
+        <Stack.Screen name="pro" options={{ title: "Pro" }} />
       </Stack>
     </>
   );

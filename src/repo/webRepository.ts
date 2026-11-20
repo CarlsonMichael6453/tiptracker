@@ -111,6 +111,7 @@ export function deleteProfile(db: WebDatabase, id: string): Promise<void> {
     state.goals = (state.goals ?? []).filter((goal) => goal.profileId !== id);
     state.goalEntries = (state.goalEntries ?? []).filter((entry) => !removed.has(entry.goalId));
     state.payStubs = (state.payStubs ?? []).filter((stub) => stub.profileId !== id);
+    state.budgets = (state.budgets ?? []).filter((row) => row.profileId !== id);
     if (state.kv.active_profile_id === id) {
       const next = state.profiles.slice().sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1))[0];
       if (next) state.kv.active_profile_id = next.id;
@@ -133,6 +134,7 @@ export function deleteAllData(db: WebDatabase): Promise<void> {
     state.goals = [];
     state.goalEntries = [];
     state.payStubs = [];
+    state.budgets = [];
     delete state.kv.active_profile_id;
     delete state.kv.review_last_asked;
     delete state.kv.review_ask_count;

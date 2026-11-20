@@ -1,4 +1,5 @@
 import type { SQLiteDatabase } from "expo-sqlite";
+import type { BudgetLedger } from "../budget/types";
 import type { GoalEntry, PayStub, Profile, Role, SavingsGoal, ShiftRecord } from "../domain/types";
 
 /** The whole ledger, as kept by the browser build. */
@@ -9,11 +10,12 @@ export type WebState = {
   goals: SavingsGoal[];
   goalEntries: GoalEntry[];
   payStubs: PayStub[];
+  budgets: BudgetLedger[];
   kv: Record<string, string>;
 };
 
 export function emptyWebState(): WebState {
-  return { profiles: [], roles: [], shifts: [], goals: [], goalEntries: [], payStubs: [], kv: {} };
+  return { profiles: [], roles: [], shifts: [], goals: [], goalEntries: [], payStubs: [], budgets: [], kv: {} };
 }
 
 /**

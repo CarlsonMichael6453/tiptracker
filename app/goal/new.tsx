@@ -4,7 +4,8 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { isCivilDate, todayCivil } from "../../src/calc/dates";
 import { suggestHorizon, type GoalHorizon } from "../../src/calc/goals";
 import { parseMoney } from "../../src/calc/money";
-import { createGoal } from "../../src/repo/goals";
+import { canAdd } from "../../src/config/pro";
+import { createGoal, listGoals } from "../../src/repo/goals";
 import { useApp } from "../../src/state/AppState";
 import { Screen } from "../../src/ui/components";
 import { useTheme } from "../../src/ui/theme";
@@ -42,6 +43,11 @@ export default function NewGoal() {
     }
     if (parsedWeekly.status !== "ok" || parsedWeekly.cents < 0) {
       setError("Enter a weekly set-aside, or leave it blank.");
+      return;
+    }
+    const existing = await listGoals(db, activeProfile.id);
+    if (!canAdd("goals", existing.filter((goal) => goal.status !== "archived").length)) {
+      setError("The free plan keeps 2 savings goals. Pro removes the cap.");
       return;
     }
     const id = await createGoal(db, {

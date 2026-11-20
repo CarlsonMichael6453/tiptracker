@@ -66,7 +66,7 @@ export function Screen({
 }
 
 export function Title({ children }: { children: ReactNode }) {
-  const { palette, decorative } = useTheme();
+  const { palette, decorative, headingFont } = useTheme();
   return (
     <Text
       style={[
@@ -77,6 +77,7 @@ export function Title({ children }: { children: ReactNode }) {
           alignSelf: "flex-start",
           paddingHorizontal: decorative ? 10 : 0,
           borderRadius: decorative ? 10 : 0,
+          fontFamily: headingFont,
         },
       ]}
     >
