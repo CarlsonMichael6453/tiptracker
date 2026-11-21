@@ -19,7 +19,8 @@ import { AppearancePicker } from "../../src/ui/AppearancePicker";
 import { GoalStylePicker } from "../../src/ui/GoalMark";
 import { AppearanceType } from "../../src/ui/AppearanceType";
 import { defaultAppearance } from "../../src/ui/appearance";
-import { Button, Card, ErrorList, Field, Muted, Screen, Title, WeekStartPicker } from "../../src/ui/components";
+import { Button, Card, ErrorList, Field, Muted, Screen, Title, useScreenScroll, WeekStartPicker } from "../../src/ui/components";
+import { TourAnchor, useTour } from "../../src/ui/TourLayer";
 import { useTheme } from "../../src/ui/theme";
 import { Text } from "../../src/ui/text";
 
@@ -36,6 +37,14 @@ export default function Settings() {
   const [threshold, setThreshold] = useState(8 * 60);
   const [errors, setErrors] = useState<string[]>([]);
   const version = Constants.expoConfig?.version ?? "1.0.0";
+  const scroll = useScreenScroll();
+  const { target: tourTarget } = useTour();
+
+  useEffect(() => {
+    if (tourTarget !== "appearance") return;
+    const timer = setTimeout(() => scroll?.current?.scrollToEnd({ animated: true }), 60);
+    return () => clearTimeout(timer);
+  }, [tourTarget, scroll]);
 
   useEffect(() => {
     if (!activeProfile) return;
@@ -220,6 +229,7 @@ export default function Settings() {
         <Button label="Add another profile" kind="secondary" onPress={() => router.push("/profile/new")} />
       </Card>
 
+      <TourAnchor id="appearance">
       <Card>
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>Appearance</Text>
         <Muted>Saved on this profile. Every pattern is on this screen. Pick one, then change its colors.</Muted>
@@ -232,6 +242,7 @@ export default function Settings() {
           onChange={(next) => void saveProfileAppearance(next)}
         />
       </Card>
+      </TourAnchor>
 
       <Card>
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>About</Text>

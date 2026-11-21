@@ -7,6 +7,7 @@ import { parseMoney } from "../calc/money";
 import { goalAccessLabel, goalPercent, resolveGoalStyle } from "../calc/goalStyle";
 import { paceReport, speakMoney, type PaceShift } from "../calc/tipJar";
 import { GoalMark } from "./GoalMark";
+import { TourAnchor } from "./TourLayer";
 import { requestReviewMoment } from "../feedback/reviewBus";
 import { listShifts } from "../repo/repository";
 import { useApp } from "../state/AppState";
@@ -95,6 +96,7 @@ export function TipJar() {
 
   return (
     <>
+      <TourAnchor id="goal-mark">
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}
@@ -113,6 +115,7 @@ export function TipJar() {
         {style === "jar" ? <JarGraphic fill={progress.fill} size={28} reduceMotion={reduceMotion} /> : <GoalMark kind={style} fill={progress.fill} size={28} />}
         {burst ? <Sparkle reduceMotion={reduceMotion} /> : null}
       </Pressable>
+      </TourAnchor>
       <Modal visible={open} transparent animationType={reduceMotion ? "none" : "fade"} onRequestClose={() => setOpen(false)}>
         <Pressable accessibilityRole="button" accessibilityLabel="Close tip jar" onPress={() => setOpen(false)} style={{ flex: 1, backgroundColor: "rgba(20, 22, 16, 0.45)", justifyContent: "flex-end" }}>
           <Pressable onPress={() => undefined} style={{ backgroundColor: palette.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: "88%" }}>

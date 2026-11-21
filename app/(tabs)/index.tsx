@@ -9,6 +9,7 @@ import type { ShiftRecord } from "../../src/domain/types";
 import { listShiftsInRange } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
 import { Button, Card, Muted, Screen, Title } from "../../src/ui/components";
+import { TourAnchor } from "../../src/ui/TourLayer";
 import { useTheme } from "../../src/ui/theme";
 import { Text } from "../../src/ui/text";
 
@@ -87,7 +88,9 @@ export default function Home() {
           ))}
         </Card>
       ) : null}
-      <Button label="Log shift" onPress={() => router.push("/shift/new")} />
+      <TourAnchor id="log-shift">
+        <Button label="Log shift" onPress={() => router.push("/shift/new")} />
+      </TourAnchor>
       <Card>
         <Muted>This week</Muted>
         {takeHome == null ? (
@@ -99,7 +102,9 @@ export default function Home() {
           </>
         )}
         <Text style={{ color: palette.faint, fontSize: 13 }}>Real hourly = (wages + tips − tip-outs) ÷ hours.</Text>
-        {pace ? <Text style={{ color: palette.text, fontSize: 15 }}>{pace}</Text> : null}
+        <TourAnchor id="pace-line">
+          <Text style={{ color: palette.text, fontSize: 15 }}>{pace || "Log a couple of weeks to see your pace."}</Text>
+        </TourAnchor>
       </Card>
       {latest ? (
         <Pressable accessibilityRole="button" onPress={() => router.push(`/shift/${latest.id}`)}>
