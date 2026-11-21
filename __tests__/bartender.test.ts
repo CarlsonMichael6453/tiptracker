@@ -1,7 +1,7 @@
 import { createMemoryWebDatabase } from "../src/db/webStore";
 import { effectivePosture } from "../src/domain/roleDefaults";
 import type { Profile, Role } from "../src/domain/types";
-import { applyRole, createDraft } from "../src/features/shift/model";
+import { applyRole, createDraft, prepareShift } from "../src/features/shift/model";
 import { createProfile, listRoles, updateRole } from "../src/repo/webRepository";
 import { defaultAppearance } from "../src/ui/appearance";
 
@@ -96,6 +96,11 @@ describe("bartender tip-out default", () => {
     expect(fresh.tipShareOpen).toBe(true);
     expect(fresh.tipOutLines[0]?.percentText).toBe("");
     expect(fresh.tipOutLines[0]?.amountText).toBe("");
+    fresh.hoursText = "8";
+    fresh.wageText = "15";
+    const prepared = prepareShift(fresh, { ...profile, id: profileId }, roles, "2026-11-20");
+    expect(prepared.errors.filter((line) => /tip|sales/i.test(line))).toEqual([]);
+    expect(prepared.write).not.toBeNull();
 
     await updateRole(db, other!.id, {
       name: "Other",
