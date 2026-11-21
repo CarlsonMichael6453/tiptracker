@@ -2,11 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Pressable } from "react-native";
 import { useTheme } from "./theme";
+import { TourAnchor } from "./TourLayer";
 
 /** Opens pay-stub scan. Sits on the top left, opposite the tip jar. */
 export function ScanButton() {
   const { palette } = useTheme();
   return (
+    <TourAnchor id="scan-stub">
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="Scan pay stub"
@@ -24,5 +26,6 @@ export function ScanButton() {
     >
       <Ionicons name="camera-outline" size={22} color={palette.text} />
     </Pressable>
+    </TourAnchor>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import {
   Pressable,
   ScrollView,
@@ -18,6 +18,13 @@ import { TipJar } from "./TipJar";
 import { Text, TextInput } from "./text";
 import { useTheme } from "./theme";
 
+type ScreenScroller = { scrollToEnd: (options?: { animated?: boolean }) => void };
+const ScreenScrollContext = createContext<RefObject<ScreenScroller | null> | null>(null);
+
+export function useScreenScroll() {
+  return useContext(ScreenScrollContext);
+}
+
 export function Screen({
   children,
   footer,
@@ -32,6 +39,7 @@ export function Screen({
   tipJar?: boolean;
 }) {
   const { appearance } = useTheme();
+  const scroller = useRef<ScreenScroller | null>(null);
   const motion = useBackgroundMotion();
   const animate = shouldAnimateBackground({
     style: appearance.style,
@@ -40,7 +48,14 @@ export function Screen({
     appVisible: motion.appVisible,
   });
   const body = scroll ? (
-    <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" style={styles.fill}>
+    <ScrollView
+      ref={(node) => {
+        scroller.current = node;
+      }}
+      contentContainerStyle={styles.scroll}
+      keyboardShouldPersistTaps="handled"
+      style={styles.fill}
+    >
       {children}
     </ScrollView>
   ) : (
@@ -52,6 +67,7 @@ export function Screen({
       edges={withHeader ? ["left", "right"] : ["top", "left", "right"]}
     >
       <SceneBackground settings={appearance} animate={animate} />
+      <ScreenScrollContext.Provider value={scroller}>
       {tipJar ? (
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingTop: 4, zIndex: 2 }}>
           <ScanButton />
@@ -60,6 +76,7 @@ export function Screen({
       ) : null}
       {body}
       {footer}
+      </ScreenScrollContext.Provider>
     </SafeAreaView>
   );
 }
