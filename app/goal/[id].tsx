@@ -139,7 +139,7 @@ export default function GoalDetail() {
       {pace.trackLine ? <Text style={{ color: palette.muted }}>{pace.trackLine}</Text> : null}
       <Field label="Name" value={name} onChange={setName} />
       <Field label="Target amount" value={target} onChange={setTarget} numeric />
-      <Field label="Target date" value={date} onChange={setDate} placeholder="2027-06-01" />
+      <Field label="Target date" value={date} onChange={setDate} />
       <Text style={{ color: palette.faint, fontSize: 13 }}>{suggestion ? `Suggestion from the date: ${suggestion === "short" ? "short-term" : "long-term"}. You can pick either.` : "Leave the date blank if there isn’t one."}</Text>
       <View style={{ flexDirection: "row", gap: 8 }}>
         <Choice label="Short-term" selected={horizon === "short"} onPress={() => setHorizon("short")} />
@@ -194,12 +194,12 @@ function entryLabel(entry: GoalEntry): string {
   return `Adjusted ${sign}${speakMoney(Math.abs(entry.amountCents))}`;
 }
 
-function Field({ label, value, onChange, placeholder, numeric = false }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; numeric?: boolean }) {
+function Field({ label, value, onChange, numeric = false }: { label: string; value: string; onChange: (value: string) => void; numeric?: boolean }) {
   const { palette } = useTheme();
   return (
     <View style={{ gap: 6 }}>
       <Text style={{ color: palette.muted, fontWeight: "600" }}>{label}</Text>
-      <TextInput value={value} onChangeText={onChange} placeholder={placeholder} placeholderTextColor={palette.faint} keyboardType={numeric ? "decimal-pad" : "default"} accessibilityLabel={label} autoCapitalize="none" style={{ minHeight: 48, borderWidth: 1, borderColor: palette.line, borderRadius: 12, paddingHorizontal: 12, color: palette.text, backgroundColor: palette.input, fontSize: 18 }} />
+      <TextInput value={value} onChangeText={onChange} keyboardType={numeric ? "decimal-pad" : "default"} accessibilityLabel={label} autoCapitalize="none" style={{ minHeight: 48, borderWidth: 1, borderColor: palette.line, borderRadius: 12, paddingHorizontal: 12, color: palette.text, backgroundColor: palette.input, fontSize: 18 }} />
     </View>
   );
 }

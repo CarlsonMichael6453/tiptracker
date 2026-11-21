@@ -78,6 +78,8 @@ export type Role = {
   tipOutSettlement: Settlement;
   sortOrder: number;
   tipOutDefaults: TipOutDefault[];
+  /** True after the role is saved from the editor or created by hand. Starter roles leave this off. */
+  tipOutCustomized?: boolean;
 };
 
 export type Profile = {

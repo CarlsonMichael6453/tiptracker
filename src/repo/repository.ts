@@ -2,6 +2,7 @@ import type { SQLiteDatabase } from "expo-sqlite";
 import { DEFAULT_DOUBLE_THRESHOLD_MINUTES, DEFAULT_LUNCH_CUTOFF_MINUTES } from "../calc/classify";
 import type { Meal } from "../calc/classify";
 import type { ShiftSnapshot, TipOutKind } from "../calc/shift";
+import { effectivePosture } from "../domain/roleDefaults";
 import { defaultAppearance, parseAppearance } from "../ui/appearance";
 import { nowIso } from "../db/time";
 import { isWebDatabase, type AppDatabase } from "../db/types";
@@ -16,14 +17,10 @@ import type {
   TipOutLineRecord,
   TipShareLineRecord,
 } from "../domain/types";
+import { STARTER_ROLES } from "../domain/roleDefaults";
 import { newId } from "./ids";
 
-const STARTERS: { name: string; posture: Posture }[] = [
-  { name: "Server", posture: "tips_out" },
-  { name: "Bartender", posture: "receives_share" },
-  { name: "Busser", posture: "receives_share" },
-  { name: "Host", posture: "receives_share" },
-];
+const STARTERS = STARTER_ROLES;
 
 export async function listProfiles(db: AppDatabase): Promise<Profile[]> {
   if (isWebDatabase(db)) return webDb.listProfiles(db);
@@ -75,12 +72,6 @@ export async function createProfile(
         created,
       );
     }
-    await db.runAsync(
-      `INSERT INTO role_tip_out_default (id, role_id, label, kind, amount_cents, basis_points, sort_order)
-       VALUES (?, ?, NULL, 'percent_of_sales', NULL, 400, 0)`,
-      newId(),
-      roleIds[0],
-    );
     await setKv(db, "active_profile_id", id);
   });
   return id;
@@ -150,6 +141,7 @@ export async function deleteAllData(db: AppDatabase): Promise<void> {
     await db.runAsync("DELETE FROM app_kv WHERE key = ?", "active_profile_id");
     await db.runAsync("DELETE FROM app_kv WHERE key = ?", "review_last_asked");
     await db.runAsync("DELETE FROM app_kv WHERE key = ?", "review_ask_count");
+    await db.runAsync("DELETE FROM app_kv WHERE key = ?", "welcome_seen");
   });
 }
 
@@ -221,8 +213,8 @@ export async function createRole(
   );
   await db.withTransactionAsync(async () => {
     await db.runAsync(
-      `INSERT INTO role (id, profile_id, name, posture, default_wage_cents, tip_out_settlement, sort_order, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO role (id, profile_id, name, posture, default_wage_cents, tip_out_settlement, tip_out_customized, sort_order, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
       id,
       input.profileId,
       input.name.trim(),
@@ -252,7 +244,7 @@ export async function updateRole(
   if (isWebDatabase(db)) return webDb.updateRole(db, id, input);
   await db.withTransactionAsync(async () => {
     await db.runAsync(
-      `UPDATE role SET name = ?, posture = ?, default_wage_cents = ?, tip_out_settlement = ?, updated_at = ? WHERE id = ?`,
+      `UPDATE role SET name = ?, posture = ?, default_wage_cents = ?, tip_out_settlement = ?, tip_out_customized = 1, updated_at = ? WHERE id = ?`,
       input.name.trim(),
       input.posture,
       input.defaultWageCents,
@@ -566,6 +558,7 @@ type RoleRow = {
   posture: Posture;
   default_wage_cents: number | null;
   tip_out_settlement: "cash" | "paycheck";
+  tip_out_customized: number | null;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -669,7 +662,7 @@ function mapRole(row: RoleRow, defaults: TipOutDefaultRow[]): Role {
     basisPoints: line.basis_points,
     sortOrder: line.sort_order,
   }));
-  return {
+  const role = {
     id: row.id,
     profileId: row.profile_id,
     name: row.name,
@@ -678,7 +671,9 @@ function mapRole(row: RoleRow, defaults: TipOutDefaultRow[]): Role {
     tipOutSettlement: row.tip_out_settlement,
     sortOrder: row.sort_order,
     tipOutDefaults,
+    tipOutCustomized: row.tip_out_customized === 1,
   };
+  return { ...role, posture: effectivePosture(role) };
 }
 
 function mapShift(row: ShiftRow, tipOut: TipOutLineRow[], tipShare: TipShareLineRow[]): ShiftRecord {

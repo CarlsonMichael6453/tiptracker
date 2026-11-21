@@ -138,8 +138,6 @@ export function TipJar() {
             <TextInput
               value={goalDraft}
               onChangeText={setGoalDraft}
-              placeholder="800"
-              placeholderTextColor={palette.faint}
               keyboardType="decimal-pad"
               accessibilityLabel="Weekly goal"
               style={{

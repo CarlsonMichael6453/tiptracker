@@ -6,7 +6,7 @@ import { DEFAULT_WEEK_STARTS_ON } from "../../calc/classify";
 import { Button, Chips, ErrorList, Field, Screen, Title, WeekStartPicker } from "../../ui/components";
 import { useTheme } from "../../ui/theme";
 
-const ROLES = ["Server", "Bartender", "Busser", "Host"];
+const ROLES = ["Server", "Bartender", "Busser", "Host", "Other"];
 
 export function ProfileSetup({
   submitLabel,
@@ -49,15 +49,12 @@ export function ProfileSetup({
       <Text style={{ color: palette.muted, fontSize: 16, lineHeight: 22 }}>
         A profile is one set of books. A job, or a person. Nothing leaves this phone.
       </Text>
-      <Field label="Profile name" value={name} keyboard="default" placeholder="Olive Garden" onChangeText={setName} />
+      <Field label="Profile name" value={name} keyboard="default" onChangeText={setName} />
       <View style={{ gap: 6 }}>
         <Text style={{ color: palette.muted, fontWeight: "600" }}>Usual role</Text>
         <Chips value={role} onChange={setRole} options={ROLES.map((item) => ({ value: item, label: item }))} />
-        <Text style={{ color: palette.faint, fontSize: 14, lineHeight: 20 }}>
-          Server tip-out starts at 4% of sales. That’s a guess — change the percent or switch it to tips in Settings if your restaurant does it differently.
-        </Text>
       </View>
-      <Field label="Default hourly wage" value={wage} placeholder="16.50" onChangeText={setWage} />
+      <Field label="Default hourly wage" value={wage} onChangeText={setWage} />
       <View style={{ gap: 6 }}>
         <Text style={{ color: palette.muted, fontWeight: "600" }}>Week starts on</Text>
         <WeekStartPicker value={weekStartsOn} onChange={setWeekStartsOn} />

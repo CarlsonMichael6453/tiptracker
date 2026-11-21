@@ -14,7 +14,7 @@ describe("browser ledger", () => {
     });
     const roles = await web.listRoles(db, profileId);
     const server = roles.find((role) => role.name === "Server");
-    expect(server?.tipOutDefaults[0]?.basisPoints).toBe(400);
+    expect(server?.tipOutDefaults).toEqual([]);
     expect(server?.tipOutSettlement).toBe("cash");
     const profile = await web.getProfile(db, profileId);
     expect(profile?.weekStartsOn).toBe(3);

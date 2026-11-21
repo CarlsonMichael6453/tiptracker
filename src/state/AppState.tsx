@@ -11,6 +11,7 @@ import {
   setAppearance as saveAppearance,
   updateProfile,
 } from "../repo/repository";
+import { markWelcomeSeen as persistWelcomeSeen, readWelcomeSeen } from "../repo/welcomeState";
 
 type AppContextValue = {
   ready: boolean;
@@ -24,6 +25,8 @@ type AppContextValue = {
   updateAppearance: (value: Appearance) => Promise<void>;
   saveProfileAppearance: (value: AppearanceSettings) => Promise<void>;
   saveTipJar: (patch: Partial<Pick<Profile, "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek">>) => Promise<void>;
+  welcomeSeen: boolean;
+  markWelcomeSeen: () => Promise<void>;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -35,14 +38,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfile, setActiveProfile] = useState<Profile | null>(null);
   const [appearance, setAppearanceState] = useState<Appearance>("system");
+  const [welcomeSeen, setWelcomeSeen] = useState(false);
 
   const reload = useCallback(async () => {
     const database = db ?? (await openDatabase());
     if (!db) setDb(database);
-    const [list, activeId, appearanceValue] = await Promise.all([
+    const [list, activeId, appearanceValue, seen] = await Promise.all([
       listProfiles(database),
       getActiveProfileId(database),
       getAppearance(database),
+      readWelcomeSeen(database),
     ]);
     let active = activeId ? await getProfile(database, activeId) : null;
     if (!active && list[0]) {
@@ -52,6 +57,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setProfiles(list);
     setActiveProfile(active);
     setAppearanceState(appearanceValue);
+    setWelcomeSeen(seen);
   }, [db]);
 
   useEffect(() => {
@@ -61,10 +67,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const database = await openDatabase();
         if (cancelled) return;
         setDb(database);
-        const [list, activeId, appearanceValue] = await Promise.all([
+        const [list, activeId, appearanceValue, seen] = await Promise.all([
           listProfiles(database),
           getActiveProfileId(database),
           getAppearance(database),
+          readWelcomeSeen(database),
         ]);
         let active = activeId ? list.find((profile) => profile.id === activeId) ?? null : null;
         if (!active && list[0]) {
@@ -75,6 +82,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setProfiles(list);
         setActiveProfile(active);
         setAppearanceState(appearanceValue);
+        setWelcomeSeen(seen);
         setReady(true);
       } catch (error) {
         if (cancelled) return;
@@ -127,9 +135,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [db, activeProfile],
   );
 
+  const markWelcomeSeen = useCallback(async () => {
+    if (!db) return;
+    setWelcomeSeen(true);
+    await persistWelcomeSeen(db);
+  }, [db]);
+
   const value = useMemo(
-    () => ({ ready, bootError, db, profiles, activeProfile, appearance, reload, setActive, updateAppearance, saveProfileAppearance, saveTipJar }),
-    [ready, bootError, db, profiles, activeProfile, appearance, reload, setActive, updateAppearance, saveProfileAppearance, saveTipJar],
+    () => ({
+      ready,
+      bootError,
+      db,
+      profiles,
+      activeProfile,
+      appearance,
+      reload,
+      setActive,
+      updateAppearance,
+      saveProfileAppearance,
+      saveTipJar,
+      welcomeSeen,
+      markWelcomeSeen,
+    }),
+    [ready, bootError, db, profiles, activeProfile, appearance, reload, setActive, updateAppearance, saveProfileAppearance, saveTipJar, welcomeSeen, markWelcomeSeen],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

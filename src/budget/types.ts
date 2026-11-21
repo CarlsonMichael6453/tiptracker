@@ -40,8 +40,8 @@ export function emptyBudget(profileId: string): BudgetLedger {
   return {
     profileId,
     baselineMode: "percentile",
-    floorCents: 40000,
-    taxBps: 1500,
+    floorCents: 0,
+    taxBps: 0,
     bufferCents: 0,
     reminders: false,
     bills: [],

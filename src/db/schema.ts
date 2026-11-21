@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS role (
   posture TEXT NOT NULL CHECK (posture IN ('tips_out', 'receives_share', 'both')),
   default_wage_cents INTEGER CHECK (default_wage_cents IS NULL OR default_wage_cents >= 0),
   tip_out_settlement TEXT NOT NULL CHECK (tip_out_settlement IN ('cash', 'paycheck')),
+  tip_out_customized INTEGER NOT NULL DEFAULT 0 CHECK (tip_out_customized IN (0, 1)),
   sort_order INTEGER NOT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL

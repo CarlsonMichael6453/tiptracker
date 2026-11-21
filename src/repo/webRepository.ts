@@ -2,15 +2,11 @@ import { DEFAULT_DOUBLE_THRESHOLD_MINUTES, DEFAULT_LUNCH_CUTOFF_MINUTES } from "
 import { defaultAppearance } from "../ui/appearance";
 import { nowIso } from "../db/time";
 import type { WebDatabase, WebState } from "../db/types";
+import { effectivePosture, STARTER_ROLES } from "../domain/roleDefaults";
 import type { Appearance, Posture, Profile, Role, ShiftRecord, TipOutDefault } from "../domain/types";
 import type { RoleTipOutWrite, ShiftWrite } from "./repository";
 
-const STARTERS: { name: string; posture: Posture }[] = [
-  { name: "Server", posture: "tips_out" },
-  { name: "Bartender", posture: "receives_share" },
-  { name: "Busser", posture: "receives_share" },
-  { name: "Host", posture: "receives_share" },
-];
+const STARTERS = STARTER_ROLES;
 
 function nid(): string {
   return globalThis.crypto.randomUUID();
@@ -42,19 +38,8 @@ export function createProfile(
       defaultWageCents: null,
       tipOutSettlement: "cash",
       sortOrder: index,
-      tipOutDefaults:
-        starter.name === "Server"
-          ? [
-              {
-                id: nid(),
-                label: null,
-                kind: "percent_of_sales",
-                amountCents: null,
-                basisPoints: 400,
-                sortOrder: 0,
-              },
-            ]
-          : [],
+      tipOutCustomized: false,
+      tipOutDefaults: [],
     }));
     state.profiles.push({
       id,
@@ -138,6 +123,7 @@ export function deleteAllData(db: WebDatabase): Promise<void> {
     delete state.kv.active_profile_id;
     delete state.kv.review_last_asked;
     delete state.kv.review_ask_count;
+    delete state.kv.welcome_seen;
   });
 }
 
@@ -154,7 +140,10 @@ export function listRoles(db: WebDatabase, profileId: string): Promise<Role[]> {
 }
 
 export function getRole(db: WebDatabase, id: string): Promise<Role | null> {
-  return db.read((state) => state.roles.find((role) => role.id === id) ?? null);
+  return db.read((state) => {
+    const role = state.roles.find((item) => item.id === id);
+    return role ? presentRole(role) : null;
+  });
 }
 
 export function createRole(
@@ -180,6 +169,7 @@ export function createRole(
       defaultWageCents: input.defaultWageCents,
       tipOutSettlement: input.tipOutSettlement,
       sortOrder,
+      tipOutCustomized: true,
       tipOutDefaults: defaultsFrom(input.tipOutDefaults),
     });
     return id;
@@ -203,6 +193,7 @@ export function updateRole(
     assertUniqueRoleName(state, role.profileId, input.name, id);
     role.name = input.name.trim();
     role.posture = input.posture;
+    role.tipOutCustomized = true;
     role.defaultWageCents = input.defaultWageCents;
     role.tipOutSettlement = input.tipOutSettlement;
     role.tipOutDefaults = defaultsFrom(input.tipOutDefaults);
@@ -317,7 +308,12 @@ function rolesFor(state: WebState, profileId: string): Role[] {
   return state.roles
     .filter((role) => role.profileId === profileId)
     .slice()
-    .sort((a, b) => a.sortOrder - b.sortOrder || (a.id < b.id ? -1 : 1));
+    .sort((a, b) => a.sortOrder - b.sortOrder || (a.id < b.id ? -1 : 1))
+    .map(presentRole);
+}
+
+function presentRole(role: Role): Role {
+  return { ...role, posture: effectivePosture(role) };
 }
 
 function assertUniqueRoleName(state: WebState, profileId: string, name: string, exceptId?: string) {

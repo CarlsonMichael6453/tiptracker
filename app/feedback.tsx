@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Linking, Platform, Pressable, View } from "react-native";
 import { FEEDBACK_EMAIL } from "../src/config/feedback";
 import { readDeviceContext } from "../src/feedback/deviceInfo";
-import { buildFeedbackMail, feedbackPlaceholder, includedLine, type FeedbackKind } from "../src/feedback/message";
+import { buildFeedbackMail, includedLine, type FeedbackKind } from "../src/feedback/message";
 import { Screen } from "../src/ui/components";
 import { useTheme } from "../src/ui/theme";
 import { Text, TextInput } from "../src/ui/text";
@@ -85,8 +85,6 @@ export default function FeedbackScreen() {
       <TextInput
         value={message}
         onChangeText={setMessage}
-        placeholder={feedbackPlaceholder(kind)}
-        placeholderTextColor={palette.faint}
         multiline
         accessibilityLabel="Feedback note"
         style={{ minHeight: 120, borderWidth: 1, borderColor: palette.line, borderRadius: 12, padding: 12, color: palette.text, backgroundColor: palette.input, fontSize: 17, textAlignVertical: "top" }}
@@ -95,8 +93,6 @@ export default function FeedbackScreen() {
       <TextInput
         value={replyTo}
         onChangeText={setReplyTo}
-        placeholder="you@example.com"
-        placeholderTextColor={palette.faint}
         keyboardType="email-address"
         autoCapitalize="none"
         accessibilityLabel="Reply-to email"

@@ -49,6 +49,8 @@ function Navigation() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+        <Stack.Screen name="welcome" options={{ headerShown: false }} />
+        <Stack.Screen name="tour" options={{ headerShown: false }} />
         <Stack.Screen name="shift/new" options={{ title: "Log shift" }} />
         <Stack.Screen name="shift/[id]" options={{ title: "Shift" }} />
         <Stack.Screen name="shift/edit/[id]" options={{ title: "Edit shift" }} />
