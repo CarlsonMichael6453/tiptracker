@@ -8,7 +8,7 @@ export default function Onboarding() {
   if (activeProfile) return <Redirect href="/(tabs)" />;
   return (
     <ProfileSetup
-      submitLabel="Continue"
+      submitLabel="That's me"
       onSubmit={async (value) => {
         if (!db) return;
         await createProfile(db, value);

@@ -20,12 +20,15 @@ import { GoalStylePicker } from "../../src/ui/GoalMark";
 import { AppearanceType } from "../../src/ui/AppearanceType";
 import { defaultAppearance } from "../../src/ui/appearance";
 import { Button, Card, ErrorList, Field, Muted, Screen, Title, useScreenScroll, WeekStartPicker } from "../../src/ui/components";
+import { useWorkingProfile } from "../../src/ui/TourDemo";
 import { TourAnchor, useTour } from "../../src/ui/TourLayer";
+import { TOUR_GUEST_ID } from "../../src/welcome/tourDemo";
 import { useTheme } from "../../src/ui/theme";
 import { Text } from "../../src/ui/text";
 
 export default function Settings() {
-  const { db, activeProfile, profiles, reload, setActive, saveProfileAppearance, saveTipJar } = useApp();
+  const { db, profiles, reload, setActive, saveProfileAppearance, saveTipJar } = useApp();
+  const activeProfile = useWorkingProfile();
   const { palette } = useTheme();
   const [roles, setRoles] = useState<Role[]>([]);
   const [name, setName] = useState("");
@@ -73,6 +76,7 @@ export default function Settings() {
   const database = db;
 
   const saveProfile = async () => {
+    if (profile.id === TOUR_GUEST_ID) return;
     const nextErrors: string[] = [];
     const trimmed = name.trim();
     if (trimmed.length < 1 || trimmed.length > 40) nextErrors.push("Enter a name, up to 40 characters.");
@@ -107,6 +111,7 @@ export default function Settings() {
   };
 
   const confirmDeleteProfile = () => {
+    if (profile.id === TOUR_GUEST_ID) return;
     Alert.alert(
       `Delete ${profile.name}, its roles, and its shifts? This can’t be undone.`,
       undefined,

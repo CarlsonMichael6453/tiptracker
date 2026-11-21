@@ -7,6 +7,7 @@ import { Text } from "../src/ui/text";
 import { AppProvider, useApp } from "../src/state/AppState";
 import { ReviewPrompt } from "../src/ui/ReviewPrompt";
 import { ThemeProvider, useTheme } from "../src/ui/theme";
+import { TourDemoProvider } from "../src/ui/TourDemo";
 import { TourProvider } from "../src/ui/TourLayer";
 
 export default function RootLayout() {
@@ -23,7 +24,9 @@ function Gate() {
   const { ready, bootError } = useApp();
   return (
     <ThemeProvider>
-      <TourProvider>{bootError ? <BootError message={bootError} /> : ready ? <Navigation /> : <BootError message="Opening your shifts…" />}</TourProvider>
+      <TourProvider>
+        <TourDemoProvider>{bootError ? <BootError message={bootError} /> : ready ? <Navigation /> : <BootError message="Opening your shifts…" />}</TourDemoProvider>
+      </TourProvider>
     </ThemeProvider>
   );
 }

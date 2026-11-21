@@ -9,12 +9,16 @@ import type { ShiftRecord } from "../../src/domain/types";
 import { listShiftsInRange } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
 import { Button, Card, Muted, Screen, Title } from "../../src/ui/components";
+import { useTourDemo, useWorkingProfile } from "../../src/ui/TourDemo";
 import { TourAnchor } from "../../src/ui/TourLayer";
+import { homeSnapshot } from "../../src/welcome/tourDemo";
 import { useTheme } from "../../src/ui/theme";
 import { Text } from "../../src/ui/text";
 
 export default function Home() {
-  const { db, activeProfile, profiles, setActive } = useApp();
+  const { db, profiles, setActive } = useApp();
+  const activeProfile = useWorkingProfile();
+  const demo = useTourDemo();
   const { palette } = useTheme();
   const [latest, setLatest] = useState<ShiftRecord | null>(null);
   const [weekLabel, setWeekLabel] = useState("No shifts this week.");
@@ -59,6 +63,16 @@ export default function Home() {
   );
 
   if (!activeProfile) return null;
+  const snap = demo.active ? homeSnapshot(demo.shifts, todayCivil(), activeProfile.weekStartsOn, demo.goalCents) : null;
+  const shownTakeHome = snap ? (snap.totals ? formatMoney(snap.totals.takeHomeCents) : null) : takeHome;
+  const shownDetail = snap
+    ? snap.totals
+      ? `${formatRate(snap.totals.realHourlyCents)} · ${formatHoursPhrase(snap.totals.minutes)} · ${snap.totals.shifts} ${snap.totals.shifts === 1 ? "shift" : "shifts"}`
+      : ""
+    : detail;
+  const shownWeekLabel = snap ? (snap.totals ? "" : "No shifts this week.") : weekLabel;
+  const shownPace = snap ? snap.paceLine : pace;
+  const shownLatest = snap ? snap.latest : latest;
 
   return (
     <Screen tipJar>
@@ -93,28 +107,34 @@ export default function Home() {
       </TourAnchor>
       <Card>
         <Muted>This week</Muted>
-        {takeHome == null ? (
-          <Text style={{ color: palette.text, fontSize: 22, fontWeight: "700" }}>{weekLabel}</Text>
+        {shownTakeHome == null ? (
+          <Text style={{ color: palette.text, fontSize: 22, fontWeight: "700" }}>{shownWeekLabel}</Text>
         ) : (
           <>
-            <Text style={{ color: palette.accent, fontSize: 40, fontWeight: "800" }}>{takeHome}</Text>
-            <Text style={{ color: palette.text, fontSize: 16 }}>{detail}</Text>
+            <Text style={{ color: palette.accent, fontSize: 40, fontWeight: "800" }}>{shownTakeHome}</Text>
+            <Text style={{ color: palette.text, fontSize: 16 }}>{shownDetail}</Text>
           </>
         )}
         <Text style={{ color: palette.faint, fontSize: 13 }}>Real hourly = (wages + tips − tip-outs) ÷ hours.</Text>
         <TourAnchor id="pace-line">
-          <Text style={{ color: palette.text, fontSize: 15 }}>{pace || "Log a couple of weeks to see your pace."}</Text>
+          <Text style={{ color: palette.text, fontSize: 15 }}>{shownPace || "Log a couple of weeks to see your pace."}</Text>
         </TourAnchor>
       </Card>
-      {latest ? (
-        <Pressable accessibilityRole="button" onPress={() => router.push(`/shift/${latest.id}`)}>
+      {shownLatest ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            if (demo.active) return;
+            router.push(`/shift/${shownLatest.id}`);
+          }}
+        >
           <Card>
             <Muted>Latest shift</Muted>
             <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>
-              {formatWeekdayDate(latest.shiftDate)} · {latest.roleName}
+              {formatWeekdayDate(shownLatest.shiftDate)} · {shownLatest.roleName}
             </Text>
             <Text style={{ color: palette.muted, fontSize: 16 }}>
-              {formatHoursPhrase(latest.durationMinutes)} · {formatMoney(latest.takeHomeCents)}
+              {formatHoursPhrase(shownLatest.durationMinutes)} · {formatMoney(shownLatest.takeHomeCents)}
             </Text>
           </Card>
         </Pressable>

@@ -22,21 +22,25 @@ import { periodTotals } from "../../src/calc/period";
 import { canAdd, isPro } from "../../src/config/pro";
 import type { SavingsGoal, ShiftRecord } from "../../src/domain/types";
 import { getBudget, saveBudget } from "../../src/repo/budget";
+import { commitTourSafe } from "../../src/welcome/tourDemo";
 import { listGoals } from "../../src/repo/goals";
 import { newId } from "../../src/repo/ids";
 import { listShifts } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
+import { useTourDemo, useWorkingProfile } from "../../src/ui/TourDemo";
 import { Button, Card, Chips, Field, Muted, Screen, Segment, Title } from "../../src/ui/components";
 import { ProBadge } from "../../src/ui/ProBadge";
 import { useTheme } from "../../src/ui/theme";
 import { Text } from "../../src/ui/text";
 
 export default function BudgetScreen() {
-  const { db, activeProfile } = useApp();
+  const { db } = useApp();
+  const activeProfile = useWorkingProfile();
+  const demo = useTourDemo();
   const { palette } = useTheme();
-  const [ledger, setLedger] = useState<BudgetLedger | null>(null);
-  const [shifts, setShifts] = useState<ShiftRecord[]>([]);
-  const [goals, setGoals] = useState<SavingsGoal[]>([]);
+  const [storedLedger, setLedger] = useState<BudgetLedger | null>(null);
+  const [storedShifts, setShifts] = useState<ShiftRecord[]>([]);
+  const [storedGoals, setGoals] = useState<SavingsGoal[]>([]);
   const [breakdown, setBreakdown] = useState(false);
   const [calendar, setCalendar] = useState(false);
   const [csv, setCsv] = useState<string | null>(null);
@@ -70,6 +74,9 @@ export default function BudgetScreen() {
     }, [load]),
   );
 
+  const ledger = demo.active && demo.budget ? demo.budget : storedLedger;
+  const shifts = demo.active ? demo.shifts : storedShifts;
+  const goals = demo.active ? [] : storedGoals;
   if (!activeProfile || !ledger) return null;
 
   const today = todayCivil();
@@ -104,8 +111,10 @@ export default function BudgetScreen() {
 
   async function persist(next: BudgetLedger) {
     if (!db) return;
-    setLedger(next);
-    await saveBudget(db, next);
+    await commitTourSafe(demo.active, next, async () => {
+      setLedger(next);
+      await saveBudget(db, next);
+    });
   }
 
   function addBill(sinking: boolean) {
