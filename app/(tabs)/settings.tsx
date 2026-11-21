@@ -148,6 +148,7 @@ export default function Settings() {
           <Text style={{ color: palette.muted, fontSize: 13 }}>A rating and a note. Your shifts stay on this device.</Text>
         </Pressable>
         <Button label="Replay tour" kind="secondary" onPress={() => router.push("/tour?replay=1")} />
+        <Button label="See Pro" kind="secondary" onPress={() => router.push("/pro")} />
       </Card>
       <Card>
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>This profile</Text>
