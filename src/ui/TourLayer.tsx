@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { Pressable, useWindowDimensions, View, type ViewStyle } from "react-native";
 import { TOUR_STEPS, stepAfter, tourControls, type TourAction } from "../welcome/tour";
 import { useApp } from "../state/AppState";
+import { StubScanDemo } from "./StubScanDemo";
 import { Text } from "./text";
 import { useTheme } from "./theme";
 
@@ -51,24 +52,11 @@ export function TourProvider({ children }: { children: ReactNode }) {
     router.replace(step.href);
   }, [running, step.href]);
 
-  const pending = useRef(false);
   const start = useCallback(() => {
-    if (!activeProfile) {
-      pending.current = true;
-      router.replace("/onboarding");
-      return;
-    }
     setIndex(0);
     setRunning(true);
     router.replace(TOUR_STEPS[0]!.href);
-  }, [activeProfile]);
-
-  useEffect(() => {
-    if (!pending.current || !activeProfile) return;
-    pending.current = false;
-    setIndex(0);
-    setRunning(true);
-  }, [activeProfile]);
+  }, []);
 
   const report = useCallback((id: string, rect: TourRect) => {
     setRects((current) => {
@@ -103,7 +91,8 @@ export function TourProvider({ children }: { children: ReactNode }) {
   return (
     <TourContext.Provider value={value}>
       {children}
-      {running ? <CoachMark rect={rects[step.target]} step={step} index={index} onAct={(action) => void act(action)} /> : null}
+      {running && step.id !== "stub-demo" ? <CoachMark rect={rects[step.target]} step={step} index={index} onAct={(action) => void act(action)} /> : null}
+      {running && step.id === "stub-demo" ? <StubScanDemo onNext={() => void act("next")} /> : null}
     </TourContext.Provider>
   );
 }

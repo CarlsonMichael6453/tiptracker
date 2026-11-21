@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { View } from "react-native";
 import { Text } from "../../ui/text";
-import { parseMoney } from "../../calc/money";
-import { DEFAULT_WEEK_STARTS_ON } from "../../calc/classify";
-import { Button, Chips, ErrorList, Field, Screen, Title, WeekStartPicker } from "../../ui/components";
+import { Button, Chips, ErrorList, Field, Screen, Title } from "../../ui/components";
 import { useTheme } from "../../ui/theme";
-
-const ROLES = ["Server", "Bartender", "Busser", "Host", "Other"];
+import { EMPTY_INTRO, INTRO_JOBS, introProfile } from "./intro";
 
 export function ProfileSetup({
   submitLabel,
@@ -18,24 +15,27 @@ export function ProfileSetup({
   withHeader?: boolean;
 }) {
   const { palette } = useTheme();
-  const [name, setName] = useState("");
-  const [role, setRole] = useState("Server");
-  const [wage, setWage] = useState("");
-  const [weekStartsOn, setWeekStartsOn] = useState(DEFAULT_WEEK_STARTS_ON);
+  const [name, setName] = useState(EMPTY_INTRO.name);
+  const [job, setJob] = useState(EMPTY_INTRO.job);
+  const [wage, setWage] = useState(EMPTY_INTRO.wage);
   const [errors, setErrors] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
   async function submit() {
-    const nextErrors: string[] = [];
-    const trimmed = name.trim();
-    if (trimmed.length < 1 || trimmed.length > 40) nextErrors.push("Enter a name, up to 40 characters.");
-    const parsed = parseMoney(wage);
-    if (parsed.status !== "ok") nextErrors.push("Enter your hourly wage.");
-    setErrors(nextErrors);
-    if (nextErrors.length > 0 || parsed.status !== "ok") return;
+    const result = introProfile({ name, job, wage });
+    if (!result.ok) {
+      setErrors(result.errors);
+      return;
+    }
+    setErrors([]);
     setBusy(true);
     try {
-      await onSubmit({ name: trimmed, wageCents: parsed.cents, weekStartsOn, usualRoleName: role });
+      await onSubmit({
+        name: result.name,
+        wageCents: result.wageCents,
+        weekStartsOn: result.weekStartsOn,
+        usualRoleName: result.usualRoleName,
+      });
     } catch (error) {
       setErrors([error instanceof Error ? error.message : "Could not save the profile."]);
     } finally {
@@ -45,20 +45,16 @@ export function ProfileSetup({
 
   return (
     <Screen withHeader={withHeader}>
-      <Title>Tip Tracker</Title>
-      <Text style={{ color: palette.muted, fontSize: 16, lineHeight: 22 }}>
-        A profile is one set of books. A job, or a person. Nothing leaves this phone.
+      <Title>Quick intro?</Title>
+      <Text style={{ color: palette.text, fontSize: 17, lineHeight: 24 }}>
+        Just add your name or your job so we know whose tips these are. Or tell us a little about yourself, no pressure.
       </Text>
-      <Field label="Profile name" value={name} keyboard="default" onChangeText={setName} />
+      <Field label="Name" value={name} keyboard="default" onChangeText={setName} />
       <View style={{ gap: 6 }}>
-        <Text style={{ color: palette.muted, fontWeight: "600" }}>Usual role</Text>
-        <Chips value={role} onChange={setRole} options={ROLES.map((item) => ({ value: item, label: item }))} />
+        <Text style={{ color: palette.muted, fontWeight: "600" }}>Job</Text>
+        <Chips value={job} onChange={setJob} options={INTRO_JOBS.map((item) => ({ value: item, label: item }))} />
       </View>
-      <Field label="Default hourly wage" value={wage} onChangeText={setWage} />
-      <View style={{ gap: 6 }}>
-        <Text style={{ color: palette.muted, fontWeight: "600" }}>Week starts on</Text>
-        <WeekStartPicker value={weekStartsOn} onChange={setWeekStartsOn} />
-      </View>
+      <Field label="Hourly wage, if you want" value={wage} onChangeText={setWage} hint="You can add this later." />
       <ErrorList errors={errors} />
       <Button label={busy ? "Saving…" : submitLabel} onPress={() => void submit()} disabled={busy} />
     </Screen>

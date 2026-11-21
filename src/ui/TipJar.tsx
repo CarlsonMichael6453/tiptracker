@@ -7,6 +7,7 @@ import { parseMoney } from "../calc/money";
 import { goalAccessLabel, goalPercent, resolveGoalStyle } from "../calc/goalStyle";
 import { paceReport, speakMoney, type PaceShift } from "../calc/tipJar";
 import { GoalMark } from "./GoalMark";
+import { useTourDemo, useWorkingProfile } from "./TourDemo";
 import { TourAnchor } from "./TourLayer";
 import { requestReviewMoment } from "../feedback/reviewBus";
 import { listShifts } from "../repo/repository";
@@ -28,7 +29,9 @@ const SPARKS = [
 ];
 
 export function TipJar() {
-  const { db, activeProfile, saveTipJar } = useApp();
+  const { db, saveTipJar } = useApp();
+  const activeProfile = useWorkingProfile();
+  const demo = useTourDemo();
   const { palette } = useTheme();
   const { reduceMotion } = useBackgroundMotion();
   const [open, setOpen] = useState(false);
@@ -36,6 +39,7 @@ export function TipJar() {
   const [goalDraft, setGoalDraft] = useState("");
   const [goalError, setGoalError] = useState("");
   const [burst, setBurst] = useState(false);
+  const wasDemo = useRef(false);
 
   const load = useCallback(async () => {
     if (!db || !activeProfile) return;
@@ -51,23 +55,32 @@ export function TipJar() {
 
   const report = useMemo(() => {
     if (!activeProfile) return null;
+    const source = demo.active ? demo.shifts.map((shift) => ({ shiftDate: shift.shiftDate, takeHomeCents: shift.takeHomeCents })) : shifts;
+    const goalCents = demo.active ? demo.goalCents : activeProfile.weeklyGoalCents;
     return paceReport({
       today: todayCivil(),
       weekStartsOn: activeProfile.weekStartsOn,
-      shifts,
-      goalCents: activeProfile.weeklyGoalCents,
+      shifts: source,
+      goalCents,
     });
-  }, [activeProfile, shifts]);
+  }, [activeProfile, shifts, demo.active, demo.shifts, demo.goalCents]);
 
   useEffect(() => {
+    if (wasDemo.current && !demo.active) setOpen(false);
+    wasDemo.current = demo.active;
+  }, [demo.active]);
+
+  useEffect(() => {
+    if (demo.active) return;
     if (!activeProfile || resolveGoalStyle(activeProfile.goalIndicator, activeProfile.showTipJar) === "off" || !report?.progress.met) return;
     if (activeProfile.tipJarCelebratedWeek === report.weekStart) return;
     if (!reduceMotion) setBurst(true);
     requestReviewMoment("jar");
     void saveTipJar({ tipJarCelebratedWeek: report.weekStart });
-  }, [activeProfile, reduceMotion, report, saveTipJar]);
+  }, [activeProfile, reduceMotion, report, saveTipJar, demo.active]);
 
-  const style = resolveGoalStyle(activeProfile?.goalIndicator, activeProfile?.showTipJar !== false);
+  const storedStyle = resolveGoalStyle(activeProfile?.goalIndicator, activeProfile?.showTipJar !== false);
+  const style = demo.active && storedStyle === "off" ? "jar" : storedStyle;
   if (!activeProfile || style === "off" || !report) return null;
 
   const progress = report.progress;
@@ -80,6 +93,7 @@ export function TipJar() {
   };
 
   const saveGoal = async () => {
+    if (demo.active) return;
     if (goalDraft.trim() === "") {
       await saveTipJar({ weeklyGoalCents: null });
       setGoalError("");

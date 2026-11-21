@@ -27,7 +27,14 @@ export const TOUR_STEPS: TourStep[] = [
     target: "scan-stub",
     href: "/(tabs)",
     title: "Pay stub camera",
-    body: "The camera at the top left scans a pay stub and lines it up with the shifts you logged. Nothing is saved until you confirm.",
+    body: "The camera at the top left is where a pay stub scan starts. Next is a sample snap. The real camera stays off, and nothing is saved.",
+  },
+  {
+    id: "stub-demo",
+    target: "stub-demo",
+    href: "/(tabs)",
+    title: "A sample scan",
+    body: "A made-up stub, a quick scan, then the fields. Example only.",
   },
   {
     id: "pace",
@@ -58,7 +65,17 @@ export function shouldShowWelcome(seen: boolean): boolean {
   return !seen;
 }
 
-/** Where Skip on the welcome page goes. A profile already on the device opens the tabs. */
+/**
+ * First launch is Welcome, then the tour or Skip, then profile setup.
+ * A later visit with a profile opens the tabs. A later visit with no profile opens setup.
+ */
+export function firstLaunch(welcomeSeen: boolean, hasProfile: boolean): "/welcome" | "/onboarding" | "/(tabs)" {
+  if (!welcomeSeen) return "/welcome";
+  if (!hasProfile) return "/onboarding";
+  return "/(tabs)";
+}
+
+/** Where Skip, and Get started at the end of the tour, go. Profile setup is after the tour. */
 export function appEntry(hasProfile: boolean): "/(tabs)" | "/onboarding" {
   return hasProfile ? "/(tabs)" : "/onboarding";
 }

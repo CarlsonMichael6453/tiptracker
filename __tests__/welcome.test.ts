@@ -1,7 +1,7 @@
 import { createMemoryWebDatabase } from "../src/db/webStore";
 import { readWelcomeSeen, markWelcomeSeen } from "../src/repo/welcomeState";
 import { deleteAllData } from "../src/repo/webRepository";
-import { TOUR_STEPS, appEntry, shouldShowWelcome, stepAfter, tourControls } from "../src/welcome/tour";
+import { TOUR_STEPS, appEntry, firstLaunch, shouldShowWelcome, stepAfter, tourControls } from "../src/welcome/tour";
 
 describe("welcome and tour", () => {
   test("the welcome page shows until it is marked seen, and it survives a reload", async () => {
@@ -25,16 +25,26 @@ describe("welcome and tour", () => {
   });
 
   test("next advances, and the last step offers Get started and Replay tutorial", () => {
-    expect(TOUR_STEPS.map((step) => step.id)).toEqual(["shift", "mark", "camera", "pace", "budget", "appearance"]);
+    expect(TOUR_STEPS.map((step) => step.id)).toEqual(["shift", "mark", "camera", "stub-demo", "pace", "budget", "appearance"]);
     expect(tourControls(0, TOUR_STEPS.length)).toEqual({ next: true, getStarted: false, replay: false });
     expect(tourControls(4, TOUR_STEPS.length)).toEqual({ next: true, getStarted: false, replay: false });
     expect(tourControls(TOUR_STEPS.length - 1, TOUR_STEPS.length)).toEqual({ next: false, getStarted: true, replay: true });
     expect(stepAfter(0, TOUR_STEPS.length, "next")).toEqual({ index: 1, finished: false });
-    expect(stepAfter(4, TOUR_STEPS.length, "next")).toEqual({ index: 5, finished: false });
+    expect(stepAfter(2, TOUR_STEPS.length, "next").index).toBe(TOUR_STEPS.findIndex((step) => step.id === "stub-demo"));
     expect(stepAfter(TOUR_STEPS.length - 1, TOUR_STEPS.length, "next")).toEqual({ index: TOUR_STEPS.length - 1, finished: false });
-    expect(stepAfter(5, TOUR_STEPS.length, "get-started")).toEqual({ index: 5, finished: true });
-    expect(stepAfter(5, TOUR_STEPS.length, "replay")).toEqual({ index: 0, finished: false });
+    const last = TOUR_STEPS.length - 1;
+    expect(stepAfter(last, TOUR_STEPS.length, "get-started")).toEqual({ index: last, finished: true });
+    expect(stepAfter(last, TOUR_STEPS.length, "replay")).toEqual({ index: 0, finished: false });
     expect(stepAfter(2, TOUR_STEPS.length, "replay")).toEqual({ index: 0, finished: false });
+    expect(appEntry(false)).toBe("/onboarding");
+    expect(appEntry(true)).toBe("/(tabs)");
+  });
+
+  test("first launch is welcome, then the tour or skip, then profile setup", () => {
+    expect(firstLaunch(false, false)).toBe("/welcome");
+    expect(firstLaunch(false, true)).toBe("/welcome");
+    expect(firstLaunch(true, false)).toBe("/onboarding");
+    expect(firstLaunch(true, true)).toBe("/(tabs)");
     expect(appEntry(false)).toBe("/onboarding");
     expect(appEntry(true)).toBe("/(tabs)");
   });
