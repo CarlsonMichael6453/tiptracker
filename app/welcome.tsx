@@ -27,6 +27,9 @@ export default function Welcome() {
       <Text style={{ color: palette.text, fontSize: 18, lineHeight: 26 }}>
         Tip Tracker keeps a private record of restaurant work. Shifts, wages, tips, and tip-outs stay on this device, and the take-home number is what’s left after tip-out.
       </Text>
+      <Text style={{ color: palette.text, fontSize: 18, lineHeight: 26 }}>
+        No tips to track? Use the Budget tab on its own for bills, spending categories, savings goals, and safe to spend.
+      </Text>
       {POINTS.map((point) => (
         <Text key={point} style={{ color: palette.text, fontSize: 16, lineHeight: 23 }}>
           {point}
