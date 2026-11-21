@@ -35,6 +35,7 @@ jobs:
       - name: Bust a stale home-screen cache, then add the SPA fallback
         run: |
           sed -i "s/tiptracker-build-id/${GITHUB_SHA}/g" dist/index.html
+          printf '%s\n' "{\"build\":\"${GITHUB_SHA}\"}" > dist/version.json
           cp dist/index.html dist/404.html
       - name: Setup Pages
         uses: actions/configure-pages@v5

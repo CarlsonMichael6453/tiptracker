@@ -46,6 +46,14 @@ export default function Root({ children }: PropsWithChildren) {
                     window.location.replace(url.toString());
                   }
                 }
+                fetch("/tiptracker/version.json?t=" + Date.now(), { cache: "no-store" }).then(function (res) {
+                  return res.json();
+                }).then(function (data) {
+                  if (!data || data.build === build) return;
+                  var next = new URL(window.location.href);
+                  next.searchParams.set("b", data.build);
+                  window.location.replace(next.toString());
+                }).catch(function () {});
               } catch (e) {}
             })();`,
           }}

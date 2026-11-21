@@ -49,6 +49,7 @@ export default function NewGoal() {
     const existing = await listGoals(db, activeProfile.id);
     if (!canAdd("goals", existing.filter((goal) => goal.status !== "archived").length)) {
       setError("The free plan keeps 2 savings goals. Pro removes the cap.");
+      router.push("/pro");
       return;
     }
     const id = await createGoal(db, {

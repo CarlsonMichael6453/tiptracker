@@ -27,6 +27,7 @@ import { newId } from "../../src/repo/ids";
 import { listShifts } from "../../src/repo/repository";
 import { useApp } from "../../src/state/AppState";
 import { Button, Card, Chips, Field, Muted, Screen, Segment, Title } from "../../src/ui/components";
+import { ProBadge } from "../../src/ui/ProBadge";
 import { useTheme } from "../../src/ui/theme";
 import { Text } from "../../src/ui/text";
 
@@ -169,7 +170,7 @@ export default function BudgetScreen() {
         </Muted>
         {pro ? (
           <View style={{ gap: 8 }}>
-            <Text style={{ color: palette.accent, fontWeight: "800" }}>Pro · Safe to spend this week</Text>
+            <ProBadge label="Pro · Safe to spend this week" />
             <Text style={{ color: safe.leftCents >= 0 ? palette.text : palette.danger, fontSize: 28, fontWeight: "800" }}>{formatMoney(safe.leftCents)}</Text>
             <Button label={breakdown ? "Hide breakdown" : "Why this number"} kind="secondary" onPress={() => setBreakdown((value) => !value)} />
             {breakdown ? (
@@ -301,14 +302,14 @@ export default function BudgetScreen() {
       {pro ? (
         <>
           <Card>
-            <Text style={{ color: palette.accent, fontWeight: "800" }}>Pro · Slow-week buffer</Text>
+            <ProBadge label="Pro · Slow-week buffer" />
             <Text style={{ color: palette.text, fontSize: 22, fontWeight: "800" }}>{formatMoney(ledger.bufferCents)}</Text>
             <Muted>A good week sweeps the surplus above your baseline. A short week can draw it back.</Muted>
             <Button label="Sweep this week’s surplus" onPress={() => void persist({ ...ledger, bufferCents: sweepToBuffer(week.takeHomeCents, baseline, ledger.bufferCents).bufferCents })} />
             <Button label="Draw if this week is short" kind="secondary" onPress={() => void persist({ ...ledger, bufferCents: drawFromBuffer(week.takeHomeCents, baseline, ledger.bufferCents).bufferCents })} />
           </Card>
           <Card>
-            <Text style={{ color: palette.accent, fontWeight: "800" }}>Pro · Cash-flow calendar</Text>
+            <ProBadge label="Pro · Cash-flow calendar" />
             <Muted>Bills against payday. A week that cannot cover a bill before payday is marked.</Muted>
             <Button label={calendar ? "Hide calendar" : "Show the next four weeks"} kind="secondary" onPress={() => setCalendar((value) => !value)} />
             {calendar
@@ -331,7 +332,7 @@ export default function BudgetScreen() {
             </Pressable>
           </Card>
           <Card>
-            <Text style={{ color: palette.accent, fontWeight: "800" }}>Pro · Work expenses</Text>
+            <ProBadge label="Pro · Work expenses" />
             <Muted>
               Gas, meals, uniforms, and mileage come out of real take-home. After {formatMoney(workExpenses)}: {formatMoney(real)}
               {week.minutes > 0 ? ` · ${formatRate(Math.round((real * 60) / week.minutes))}` : ""}.
@@ -351,7 +352,7 @@ export default function BudgetScreen() {
             />
           </Card>
           <Card>
-            <Text style={{ color: palette.accent, fontWeight: "800" }}>Pro · Report</Text>
+            <ProBadge label="Pro · Report" />
             <Button
               label="Build a CSV you can copy"
               kind="secondary"
