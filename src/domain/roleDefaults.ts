@@ -1,6 +1,6 @@
 import type { Posture, Role } from "./types";
 
-/** What a new profile’s starter roles use. Servers still tip out. Bartenders both pay and receive. */
+/** Starter roles. Servers tip out. Bartenders and Other both pay and receive. Bussers and hosts only receive, until that role is edited. */
 export const STARTER_ROLES: { name: string; posture: Posture }[] = [
   { name: "Server", posture: "tips_out" },
   { name: "Bartender", posture: "both" },

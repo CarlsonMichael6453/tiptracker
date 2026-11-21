@@ -109,4 +109,37 @@ describe("bartender tip-out default", () => {
     expect(again.tipOutLines[0]?.percentText).toBe("5");
     expect(again.wageText).toBe("");
   });
+
+  test("busser and host only receive tip-out until that role is edited", async () => {
+    const db = createMemoryWebDatabase();
+    const profileId = await createProfile(db, { name: "Floor", wageCents: 1500, weekStartsOn: 3, usualRoleName: "Busser" });
+    const roles = await listRoles(db, profileId);
+    const busser = roles.find((item) => item.name === "Busser")!;
+    const host = roles.find((item) => item.name === "Host")!;
+    expect(busser.posture).toBe("receives_share");
+    expect(host.posture).toBe("receives_share");
+    expect(roles.find((item) => item.name === "Bartender")?.posture).toBe("both");
+    expect(roles.find((item) => item.name === "Other")?.posture).toBe("both");
+
+    const busserShift = createDraft({ ...profile, id: profileId, lastRoleId: busser.id }, roles, "2026-11-21");
+    expect(busserShift.tipOutOpen).toBe(false);
+    expect(busserShift.tipShareOpen).toBe(true);
+    const hostShift = createDraft({ ...profile, id: profileId, lastRoleId: host.id }, roles, "2026-11-21");
+    expect(hostShift.tipOutOpen).toBe(false);
+    expect(hostShift.tipShareOpen).toBe(true);
+
+    await updateRole(db, host.id, {
+      name: "Host",
+      posture: "both",
+      defaultWageCents: null,
+      tipOutSettlement: "cash",
+      tipOutDefaults: [],
+    });
+    const edited = (await listRoles(db, profileId)).find((item) => item.name === "Host")!;
+    expect(edited.posture).toBe("both");
+    expect(edited.tipOutCustomized).toBe(true);
+    const editedShift = createDraft({ ...profile, id: profileId, lastRoleId: edited.id }, [edited], "2026-11-21");
+    expect(editedShift.tipOutOpen).toBe(true);
+    expect(editedShift.tipShareOpen).toBe(true);
+  });
 });
