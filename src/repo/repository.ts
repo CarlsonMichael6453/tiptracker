@@ -2,6 +2,7 @@ import type { SQLiteDatabase } from "expo-sqlite";
 import { DEFAULT_DOUBLE_THRESHOLD_MINUTES, DEFAULT_LUNCH_CUTOFF_MINUTES } from "../calc/classify";
 import type { Meal } from "../calc/classify";
 import type { ShiftSnapshot, TipOutKind } from "../calc/shift";
+import { resolveGoalStyle } from "../calc/goalStyle";
 import { effectivePosture } from "../domain/roleDefaults";
 import { defaultAppearance, parseAppearance } from "../ui/appearance";
 import { nowIso } from "../db/time";
@@ -80,7 +81,7 @@ export async function createProfile(
 export async function updateProfile(
   db: AppDatabase,
   id: string,
-  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes" | "appearance" | "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek" | "payPeriodStartsOn" | "payPeriodWeeks">>,
+  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes" | "appearance" | "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek" | "goalIndicator" | "payPeriodStartsOn" | "payPeriodWeeks">>,
 ): Promise<void> {
   if (isWebDatabase(db)) return webDb.updateProfile(db, id, patch);
   const current = await getProfile(db, id);
@@ -93,13 +94,14 @@ export async function updateProfile(
     doubleThresholdMinutes: patch.doubleThresholdMinutes ?? current.doubleThresholdMinutes,
     appearance: patch.appearance ?? current.appearance,
     weeklyGoalCents: "weeklyGoalCents" in patch ? (patch.weeklyGoalCents && patch.weeklyGoalCents > 0 ? patch.weeklyGoalCents : null) : current.weeklyGoalCents,
-    showTipJar: patch.showTipJar != null ? patch.showTipJar : current.showTipJar,
+    showTipJar: patch.goalIndicator != null ? patch.goalIndicator !== "off" : patch.showTipJar != null ? patch.showTipJar : current.showTipJar,
+    goalIndicator: patch.goalIndicator != null ? resolveGoalStyle(patch.goalIndicator, patch.goalIndicator !== "off") : current.goalIndicator,
     tipJarCelebratedWeek: "tipJarCelebratedWeek" in patch ? (patch.tipJarCelebratedWeek ?? null) : current.tipJarCelebratedWeek,
     payPeriodStartsOn: patch.payPeriodStartsOn != null ? patch.payPeriodStartsOn : current.payPeriodStartsOn,
     payPeriodWeeks: patch.payPeriodWeeks === 1 || patch.payPeriodWeeks === 2 ? patch.payPeriodWeeks : current.payPeriodWeeks,
   };
   await db.runAsync(
-    `UPDATE profile SET name = ?, default_wage_cents = ?, week_starts_on = ?, lunch_cutoff_minutes = ?, double_threshold_minutes = ?, appearance_json = ?, weekly_goal_cents = ?, show_tip_jar = ?, tip_jar_celebrated_week = ?, pay_period_starts_on = ?, pay_period_weeks = ?, updated_at = ? WHERE id = ?`,
+    `UPDATE profile SET name = ?, default_wage_cents = ?, week_starts_on = ?, lunch_cutoff_minutes = ?, double_threshold_minutes = ?, appearance_json = ?, weekly_goal_cents = ?, show_tip_jar = ?, tip_jar_celebrated_week = ?, goal_indicator = ?, pay_period_starts_on = ?, pay_period_weeks = ?, updated_at = ? WHERE id = ?`,
     next.name,
     next.defaultWageCents,
     next.weekStartsOn,
@@ -109,6 +111,7 @@ export async function updateProfile(
     next.weeklyGoalCents,
     next.showTipJar ? 1 : 0,
     next.tipJarCelebratedWeek,
+    next.goalIndicator,
     next.payPeriodStartsOn,
     next.payPeriodWeeks,
     nowIso(),
@@ -545,6 +548,7 @@ type ProfileRow = {
   weekly_goal_cents: number | null;
   show_tip_jar: number | null;
   tip_jar_celebrated_week: string | null;
+  goal_indicator: string | null;
   pay_period_starts_on: number | null;
   pay_period_weeks: number | null;
   created_at: string;
@@ -645,6 +649,7 @@ function mapProfile(row: ProfileRow): Profile {
     appearance: parseAppearance(parseJson(row.appearance_json)),
     weeklyGoalCents: row.weekly_goal_cents != null && row.weekly_goal_cents > 0 ? row.weekly_goal_cents : null,
     showTipJar: row.show_tip_jar === 0 ? false : true,
+    goalIndicator: resolveGoalStyle(row.goal_indicator, row.show_tip_jar !== 0),
     tipJarCelebratedWeek: row.tip_jar_celebrated_week,
     payPeriodStartsOn: row.pay_period_starts_on != null && row.pay_period_starts_on >= 0 && row.pay_period_starts_on <= 6 ? row.pay_period_starts_on : 5,
     payPeriodWeeks: row.pay_period_weeks === 2 ? 2 : 1,

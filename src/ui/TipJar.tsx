@@ -4,7 +4,9 @@ import { useFocusEffect } from "expo-router";
 import { todayCivil } from "../calc/dates";
 import { formatMoneyInput } from "../calc/format";
 import { parseMoney } from "../calc/money";
+import { goalAccessLabel, goalPercent, resolveGoalStyle } from "../calc/goalStyle";
 import { paceReport, speakMoney, type PaceShift } from "../calc/tipJar";
+import { GoalMark } from "./GoalMark";
 import { requestReviewMoment } from "../feedback/reviewBus";
 import { listShifts } from "../repo/repository";
 import { useApp } from "../state/AppState";
@@ -57,19 +59,18 @@ export function TipJar() {
   }, [activeProfile, shifts]);
 
   useEffect(() => {
-    if (!activeProfile?.showTipJar || !report?.progress.met) return;
+    if (!activeProfile || resolveGoalStyle(activeProfile.goalIndicator, activeProfile.showTipJar) === "off" || !report?.progress.met) return;
     if (activeProfile.tipJarCelebratedWeek === report.weekStart) return;
     if (!reduceMotion) setBurst(true);
     requestReviewMoment("jar");
     void saveTipJar({ tipJarCelebratedWeek: report.weekStart });
   }, [activeProfile, reduceMotion, report, saveTipJar]);
 
-  if (!activeProfile?.showTipJar || !report) return null;
+  const style = resolveGoalStyle(activeProfile?.goalIndicator, activeProfile?.showTipJar !== false);
+  if (!activeProfile || style === "off" || !report) return null;
 
   const progress = report.progress;
-  const label = progress.hasGoal
-    ? `Tip jar, ${speakMoney(report.takeHomeCents)} of ${speakMoney(progress.goalCents ?? 0)}`
-    : "Tip jar, set a weekly goal";
+  const label = goalAccessLabel(goalPercent(report.takeHomeCents, progress.goalCents));
 
   const openSheet = () => {
     setGoalDraft(progress.goalCents ? formatMoneyInput(progress.goalCents) : "");
@@ -109,7 +110,7 @@ export function TipJar() {
           borderColor: palette.line,
         }}
       >
-        <JarGraphic fill={progress.fill} size={28} reduceMotion={reduceMotion} />
+        {style === "jar" ? <JarGraphic fill={progress.fill} size={28} reduceMotion={reduceMotion} /> : <GoalMark kind={style} fill={progress.fill} size={28} />}
         {burst ? <Sparkle reduceMotion={reduceMotion} /> : null}
       </Pressable>
       <Modal visible={open} transparent animationType={reduceMotion ? "none" : "fade"} onRequestClose={() => setOpen(false)}>
@@ -118,7 +119,7 @@ export function TipJar() {
           <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }} keyboardShouldPersistTaps="handled">
             <View style={{ alignItems: "center", gap: 8 }}>
               <View>
-                <JarGraphic fill={progress.fill} size={112} reduceMotion={reduceMotion} />
+                {style === "jar" ? <JarGraphic fill={progress.fill} size={112} reduceMotion={reduceMotion} /> : <GoalMark kind={style} fill={progress.fill} size={112} />}
                 {burst ? <Sparkle reduceMotion={reduceMotion} /> : null}
               </View>
               <Text style={{ color: palette.text, fontSize: 22, fontWeight: "800" }}>

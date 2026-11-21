@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS profile (
   weekly_goal_cents INTEGER CHECK (weekly_goal_cents IS NULL OR weekly_goal_cents > 0),
   show_tip_jar INTEGER NOT NULL DEFAULT 1 CHECK (show_tip_jar IN (0, 1)),
   tip_jar_celebrated_week TEXT,
+  goal_indicator TEXT,
   pay_period_starts_on INTEGER NOT NULL DEFAULT 5 CHECK (pay_period_starts_on BETWEEN 0 AND 6),
   pay_period_weeks INTEGER NOT NULL DEFAULT 1 CHECK (pay_period_weeks IN (1, 2)),
   created_at TEXT NOT NULL,
