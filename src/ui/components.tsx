@@ -368,8 +368,6 @@ export function TimeField({
           value={hour}
           onChangeText={(text) => onChange({ hour: text.replace(/[^\d]/g, "").slice(0, 2), minute, ampm })}
           keyboardType="number-pad"
-          placeholder="4"
-          placeholderTextColor={palette.faint}
           style={[styles.timeInput, { color: palette.text, borderColor: palette.line, backgroundColor: palette.input }]}
         />
         <Text style={[styles.colon, { color: palette.text }]}>:</Text>
@@ -378,8 +376,6 @@ export function TimeField({
           value={minute}
           onChangeText={(text) => onChange({ hour, minute: text.replace(/[^\d]/g, "").slice(0, 2), ampm })}
           keyboardType="number-pad"
-          placeholder="00"
-          placeholderTextColor={palette.faint}
           style={[styles.timeInput, { color: palette.text, borderColor: palette.line, backgroundColor: palette.input }]}
         />
         <Pressable

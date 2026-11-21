@@ -42,9 +42,9 @@ export default function BudgetScreen() {
   const [billName, setBillName] = useState("");
   const [billAmount, setBillAmount] = useState("");
   const [billFrequency, setBillFrequency] = useState<"weekly" | "monthly" | "yearly">("monthly");
-  const [dueDay, setDueDay] = useState(() => String(Number(todayCivil().slice(8, 10))));
+  const [dueDay, setDueDay] = useState("");
   const [weekday, setWeekday] = useState("5");
-  const [dueMonth, setDueMonth] = useState("12");
+  const [dueMonth, setDueMonth] = useState("");
   const [envName, setEnvName] = useState("");
   const [envAmount, setEnvAmount] = useState("");
   const [spendAmount, setSpendAmount] = useState("");
@@ -116,14 +116,17 @@ export default function BudgetScreen() {
       return;
     }
     const frequency = sinking ? "yearly" : billFrequency;
-    const monthDay = Math.min(31, Math.max(1, Math.round(Number(dueDay) || 1)));
+    const monthDay = Math.round(Number(dueDay));
+    if (frequency !== "weekly" && (!Number.isInteger(monthDay) || monthDay < 1 || monthDay > 31)) return;
+    const month = Math.round(Number(dueMonth));
+    if (frequency === "yearly" && (!Number.isInteger(month) || month < 1 || month > 12)) return;
     const bill: BudgetBill = {
       id: newId(),
       name: billName.trim(),
       amountCents: cents,
       frequency,
       dueDay: frequency === "weekly" ? Math.min(6, Math.max(0, Math.round(Number(weekday) || 0))) : monthDay,
-      dueMonth: frequency === "yearly" ? Math.min(12, Math.max(1, Math.round(Number(dueMonth) || 1))) : null,
+      dueMonth: frequency === "yearly" ? month : null,
       sinking,
     };
     void persist({ ...ledger, bills: [...ledger.bills, bill] });
@@ -151,7 +154,7 @@ export default function BudgetScreen() {
           <Button label="My floor" kind={ledger.baselineMode === "floor" ? "primary" : "secondary"} onPress={() => void persist({ ...ledger, baselineMode: "floor" })} />
         </View>
         {ledger.baselineMode === "floor" ? (
-          <Field label="Weekly floor" value={String(ledger.floorCents / 100)} onChangeText={(text) => void persist({ ...ledger, floorCents: dollarsToCents(text) })} />
+          <Field label="Weekly floor" value={ledger.floorCents > 0 ? String(ledger.floorCents / 100) : ""} onChangeText={(text) => void persist({ ...ledger, floorCents: dollarsToCents(text) })} />
         ) : null}
         <Muted>
           This week’s take-home is {formatMoney(week.takeHomeCents)}. Surplus above the baseline is {formatMoney(surplus)}. The extra can go to the buffer or a goal.
@@ -202,8 +205,8 @@ export default function BudgetScreen() {
             </View>
           );
         })}
-        <Field label="Bill name" value={billName} onChangeText={setBillName} placeholder="Rent" keyboard="default" />
-        <Field label="Amount" value={billAmount} onChangeText={setBillAmount} placeholder="1200" />
+        <Field label="Bill name" value={billName} onChangeText={setBillName} keyboard="default" />
+        <Field label="Amount" value={billAmount} onChangeText={setBillAmount} />
         <Segment
           value={billFrequency}
           options={[
@@ -216,9 +219,9 @@ export default function BudgetScreen() {
         {billFrequency === "weekly" ? (
           <Chips value={weekday} onChange={setWeekday} options={WEEKDAY_SHORT.map((label, index) => ({ value: String(index), label }))} />
         ) : (
-          <Field label="Day of the month" value={dueDay} onChangeText={setDueDay} placeholder="1" />
+          <Field label="Day of the month" value={dueDay} onChangeText={setDueDay} />
         )}
-        {billFrequency === "yearly" ? <Field label="Month (1–12)" value={dueMonth} onChangeText={setDueMonth} placeholder="12" /> : null}
+        {billFrequency === "yearly" ? <Field label="Month (1–12)" value={dueMonth} onChangeText={setDueMonth} /> : null}
         <Button label={canAdd("bills", ledger.bills.length, pro) ? "Add monthly bill" : "Bill limit on the free plan"} onPress={() => addBill(false)} />
         {pro ? <Button label="Add as a sinking fund" kind="secondary" onPress={() => addBill(true)} /> : null}
       </Card>
@@ -247,7 +250,7 @@ export default function BudgetScreen() {
       <Card>
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "800" }}>Tax jar</Text>
         <Muted>Set aside {ledger.taxBps / 100}% of this week: {formatMoney(tax)}. Not tax advice. A jar is a reminder, not a filing.</Muted>
-        <Field label="Percent of the week" value={String(ledger.taxBps / 100)} onChangeText={(text) => void persist({ ...ledger, taxBps: Math.round(Number(text || 0) * 100) })} />
+        <Field label="Percent of the week" value={ledger.taxBps > 0 ? String(ledger.taxBps / 100) : ""} onChangeText={(text) => void persist({ ...ledger, taxBps: percentToBps(text) })} />
       </Card>
 
       <Card>
@@ -261,8 +264,8 @@ export default function BudgetScreen() {
             </Text>
           );
         })}
-        <Field label="Envelope" value={envName} onChangeText={setEnvName} placeholder="Groceries" keyboard="default" />
-        <Field label="Weekly amount" value={envAmount} onChangeText={setEnvAmount} placeholder="80" />
+        <Field label="Envelope" value={envName} onChangeText={setEnvName} keyboard="default" />
+        <Field label="Weekly amount" value={envAmount} onChangeText={setEnvAmount} />
         <Button
           label={canAdd("envelopes", ledger.envelopes.length, pro) ? "Add envelope" : "Envelope limit on the free plan"}
           onPress={() => {
@@ -279,7 +282,7 @@ export default function BudgetScreen() {
             setEnvAmount("");
           }}
         />
-        <Field label="Spend this week" value={spendAmount} onChangeText={setSpendAmount} placeholder="12.50" />
+        <Field label="Spend this week" value={spendAmount} onChangeText={setSpendAmount} />
         <Button
           label="Log a spend"
           kind="secondary"
@@ -333,7 +336,7 @@ export default function BudgetScreen() {
               Gas, meals, uniforms, and mileage come out of real take-home. After {formatMoney(workExpenses)}: {formatMoney(real)}
               {week.minutes > 0 ? ` · ${formatRate(Math.round((real * 60) / week.minutes))}` : ""}.
             </Muted>
-            <Field label="Work expense" value={expenseAmount} onChangeText={setExpenseAmount} placeholder="18" />
+            <Field label="Work expense" value={expenseAmount} onChangeText={setExpenseAmount} />
             <Button
               label="Subtract from this week"
               onPress={() => {
@@ -422,5 +425,11 @@ function describeDue(bill: BudgetBill): string {
 function dollarsToCents(text: string): number {
   const amount = Number(text.replace(/[^0-9.]/g, ""));
   if (!Number.isFinite(amount)) return 0;
+  return Math.round(amount * 100);
+}
+
+function percentToBps(text: string): number {
+  const amount = Number(text);
+  if (!Number.isFinite(amount) || amount < 0) return 0;
   return Math.round(amount * 100);
 }

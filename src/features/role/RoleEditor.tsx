@@ -124,7 +124,6 @@ export function RoleEditor({
       <Field
         label="Usual wage"
         value={wage}
-        placeholder={formatMoneyInput(profileWageCents)}
         hint="Blank uses the profile wage. It does not change shifts already saved."
         onChangeText={setWage}
       />

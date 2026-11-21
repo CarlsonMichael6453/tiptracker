@@ -90,14 +90,14 @@ export function ShiftForm({
   function chooseRole(roleId: string) {
     const next = roles.find((item) => item.id === roleId);
     if (!next || next.id === draft.roleId) return;
-    const apply = () => setDraft((current) => applyRole(current, next, profile));
+    const apply = (copySaved: boolean) => setDraft((current) => applyRole(current, next, profile, { copySaved }));
     if (!roleIsTouched(draft)) {
-      apply();
+      apply(true);
       return;
     }
     Alert.alert(usualTipOutQuestion(next), undefined, [
       { text: "Keep mine", style: "cancel", onPress: () => patch({ roleId: next.id, orphanRoleName: null }) },
-      { text: "Use that", onPress: apply },
+      { text: "Use that", onPress: () => apply(true) },
     ]);
   }
 
@@ -173,13 +173,12 @@ export function ShiftForm({
           ) : (
             <View style={{ flexDirection: "row", gap: 12 }}>
               <View style={{ flex: 1 }}>
-                <Field label="Hours" value={draft.hoursText} placeholder="6.5" onChangeText={(hoursText) => patch({ hoursText })} />
+                <Field label="Hours" value={draft.hoursText} onChangeText={(hoursText) => patch({ hoursText })} />
               </View>
               <View style={{ flex: 1 }}>
                 <Field
                   label="Minutes"
                   value={draft.minutesText}
-                  placeholder="0"
                   keyboard="number-pad"
                   onChangeText={(minutesText) => patch({ minutesText })}
                   hint="Or use a decimal, like 6.5"
@@ -192,7 +191,6 @@ export function ShiftForm({
         <Field
           label="Hourly wage"
           value={draft.wageText}
-          placeholder="16.50"
           onChangeText={(wageText) => patch({ wageText, wageTouched: true, saveUsualWage: false })}
         />
         {wageDiffersFromRole(draft, role, profile) ? (
@@ -213,11 +211,11 @@ export function ShiftForm({
             ]}
           />
           {draft.tipsMode === "total" ? (
-            <Field label="Guest tips" value={draft.tipsTotalText} placeholder="0" onChangeText={(tipsTotalText) => patch({ tipsTotalText })} hint="Blank saves as $0.00." />
+            <Field label="Guest tips" value={draft.tipsTotalText} onChangeText={(tipsTotalText) => patch({ tipsTotalText })} hint="Blank saves as $0.00." />
           ) : (
             <View style={{ gap: 12 }}>
-              <Field label="Cash tips" value={draft.cashText} placeholder="0" onChangeText={(cashText) => patch({ cashText })} />
-              <Field label="Card tips" value={draft.cardText} placeholder="0" onChangeText={(cardText) => patch({ cardText })} />
+              <Field label="Cash tips" value={draft.cashText} onChangeText={(cashText) => patch({ cashText })} />
+              <Field label="Card tips" value={draft.cardText} onChangeText={(cardText) => patch({ cardText })} />
             </View>
           )}
         </View>
@@ -250,13 +248,12 @@ export function ShiftForm({
                   label={draft.tipOutLines.length > 1 ? `Person ${index + 1}` : "Person (optional)"}
                   value={line.label}
                   keyboard="default"
-                  placeholder="Busser"
                   onChangeText={(label) => updateLine(index, { label })}
                 />
                 {draft.tipOutKind === "flat" ? (
-                  <Field label="Amount" value={line.amountText} placeholder="0" onChangeText={(amountText) => updateLine(index, { amountText })} />
+                  <Field label="Amount" value={line.amountText} onChangeText={(amountText) => updateLine(index, { amountText })} />
                 ) : (
-                  <Field label="Percent" value={line.percentText} placeholder="4" onChangeText={(percentText) => updateLine(index, { percentText })} />
+                  <Field label="Percent" value={line.percentText} onChangeText={(percentText) => updateLine(index, { percentText })} />
                 )}
                 {draft.tipOutLines.length > 1 ? (
                   <Button label="Remove" kind="ghost" onPress={() => removeLine(index)} />
@@ -295,7 +292,6 @@ export function ShiftForm({
           <Field
             label="Sales"
             value={draft.salesText}
-            placeholder="1200"
             hint="Blank is not zero. Type 0 if sales were $0."
             onChangeText={(salesText) => patch({ salesText, salesOpen: true })}
           />
@@ -310,7 +306,6 @@ export function ShiftForm({
               <Field
                 label="Amount"
                 value={draft.tipShareTotalText}
-                placeholder="0"
                 hint="Blank saves as $0.00."
                 onChangeText={(tipShareTotalText) => patch({ tipShareTotalText, tipShareTouched: true })}
               />
@@ -393,7 +388,6 @@ export function ShiftForm({
             keyboard="default"
             multiline
             maxLength={500}
-            placeholder="Patio closed"
             onChangeText={(notes) => patch({ notes })}
           />
         ) : (

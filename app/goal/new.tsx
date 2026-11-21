@@ -65,9 +65,9 @@ export default function NewGoal() {
   return (
     <Screen withHeader>
       <Text style={{ color: palette.muted }}>This fills only when you set money aside. Logged take-home stays separate.</Text>
-      <Field label="Name" value={name} onChange={setName} placeholder="New phone" />
-      <Field label="Target amount" value={target} onChange={setTarget} placeholder="800" numeric />
-      <Field label="Target date" value={date} onChange={(value) => { setDate(value); setPicked(false); }} placeholder="2027-06-01" />
+      <Field label="Name" value={name} onChange={setName} />
+      <Field label="Target amount" value={target} onChange={setTarget} numeric />
+      <Field label="Target date" value={date} onChange={(value) => { setDate(value); setPicked(false); }} />
       <Text style={{ color: palette.faint, fontSize: 13 }}>
         {suggestion === "short" ? "That date is inside about three months, so short-term is the suggestion." : suggestion === "long" ? "That date is further out, so long-term is the suggestion." : "Optional. A date within about three months suggests short-term."} You pick.
       </Text>
@@ -75,7 +75,7 @@ export default function NewGoal() {
         <Choice label="Short-term" selected={shown === "short"} onPress={() => { setHorizon("short"); setPicked(true); }} />
         <Choice label="Long-term" selected={shown === "long"} onPress={() => { setHorizon("long"); setPicked(true); }} />
       </View>
-      <Field label="Weekly set-aside" value={weekly} onChange={setWeekly} placeholder="40" numeric />
+      <Field label="Weekly set-aside" value={weekly} onChange={setWeekly} numeric />
       {error ? <Text style={{ color: palette.danger }}>{error}</Text> : null}
       <Pressable accessibilityRole="button" accessibilityLabel="Create goal" onPress={() => void save()} style={{ minHeight: 48, borderRadius: 14, alignItems: "center", justifyContent: "center", backgroundColor: palette.primary }}>
         <Text style={{ color: palette.onPrimary, fontWeight: "700", fontSize: 17 }}>Create goal</Text>
@@ -84,12 +84,12 @@ export default function NewGoal() {
   );
 }
 
-function Field({ label, value, onChange, placeholder, numeric = false }: { label: string; value: string; onChange: (value: string) => void; placeholder: string; numeric?: boolean }) {
+function Field({ label, value, onChange, numeric = false }: { label: string; value: string; onChange: (value: string) => void; numeric?: boolean }) {
   const { palette } = useTheme();
   return (
     <View style={{ gap: 6 }}>
       <Text style={{ color: palette.muted, fontWeight: "600" }}>{label}</Text>
-      <TextInput value={value} onChangeText={onChange} placeholder={placeholder} placeholderTextColor={palette.faint} keyboardType={numeric ? "decimal-pad" : "default"} accessibilityLabel={label} autoCapitalize="none" style={{ minHeight: 48, borderWidth: 1, borderColor: palette.line, borderRadius: 12, paddingHorizontal: 12, color: palette.text, backgroundColor: palette.input, fontSize: 18 }} />
+      <TextInput value={value} onChangeText={onChange} keyboardType={numeric ? "decimal-pad" : "default"} accessibilityLabel={label} autoCapitalize="none" style={{ minHeight: 48, borderWidth: 1, borderColor: palette.line, borderRadius: 12, paddingHorizontal: 12, color: palette.text, backgroundColor: palette.input, fontSize: 18 }} />
     </View>
   );
 }

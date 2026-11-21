@@ -39,14 +39,14 @@ This copy is the source project. It is not a store build and it does not have a 
 
    Tunnel needs a network connection on the computer while you are using the app. The shifts themselves are still stored only on the phone.
 
-7. The first screen asks for a profile name (for example “Olive Garden”), the usual role, the hourly wage, and the day the week starts. Wednesday is already selected. Server tip-out starts at 4% of sales. That percent is a guess. Change it per role in Settings.
+7. The first screen asks for a profile name, the usual role (Server, Bartender, Busser, Host, or Other), the hourly wage, and the day the week starts. Wednesday is already selected. Tip-out fields start empty. A percent saved on a role is reused on the next shift.
 
 After that, **Log shift** is the close-out. On a normal server night the fields already filled in are the role, the wage, and the tip-out rule. You type hours, guest tips, and sales, then Save.
 
 ## What’s in v1
 
 - Profiles, roles, and shifts stored in SQLite on the device.
-- Tip-out as dollars, a percent of sales, or a percent of tips. A new Server role starts at 4% of sales, and every role can be edited.
+- Tip-out as dollars, a percent of sales, or a percent of tips. Nothing is prefilled. A percent saved on a role is reused on the next shift.
 - Tip share for bussers, bartenders, and hosts. Servers can open it when they need it.
 - A per-role choice, overridable on a shift: tip-out paid in cash, or taken from the paycheck. That choice splits “cash tonight” from the paycheck when guest tips were entered as cash and card. It does not change take-home.
 - Week starts on Wednesday unless the profile changes it.

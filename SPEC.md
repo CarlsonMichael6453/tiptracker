@@ -16,7 +16,7 @@ The 4% figure is a **starting guess the user can change**, not a claim about Oli
 
 These override anything earlier in the drafting notes. Open questions that are not in this list use the defaults already written in the sections below.
 
-1. **Server tip-out** stays 4% of sales on a new Server role, and it is fully editable per role.
+1. **Tip-out percent** starts empty. A new role does not guess a percent. If he types one and saves it on the role, the next shift reuses that percent.
 2. **Week start** defaults to Wednesday (his restaurant’s week). Each profile can change it.
 3. **Lunch** is a start before 4:00pm. A **double / all-day** is a shift **longer than 8 hours** (an 8-hour shift is a single). The label is “Double / all-day”. Either one is still correctable on the shift.
 4. **Tip-out settlement.** Sometimes tip-out is paid in cash, sometimes it is taken from the paycheck. Each role has a setting, “Tip-out paid in cash” or “Taken from paycheck”, and each shift can override it. The cash-tonight versus paycheck split uses that choice. Tip share is still counted as cash.
@@ -32,8 +32,8 @@ v1 is the close-out notebook: log a real shift in a few taps, keep it forever on
 | --- | --- | --- |
 | Log a shift: date, start/end **or** total hours (overnight supported), base hourly wage, guest tips as one total **or** cash and card | v1 | This is the close-out. Without it there is no app. |
 | Job title on every shift (Server, Bartender, Busser, Host, plus names he adds), shown as a small label | v1 | A server and a busser on the same phone do not fill in the same form. The title is how the form decides what to show. |
-| Tip-out as a flat amount, a percent of sales, or a percent of tips. Default is per role. A new Server role starts at **4% of sales**, editable | v1 | This is how he tips out. A flat dollar box alone would make him do the percent in his head every night. |
-| Tip share received, with an optional “from whom.” Hidden for servers. Tip-out hidden by default for bussers, bartenders, and hosts | v1 | Support roles mostly receive tip-outs. Servers mostly pay them. Both happen sometimes, so the quiet one is one tap away. |
+| Tip-out as a flat amount, a percent of sales, or a percent of tips. No preset percent. A percent he saves on the role is reused on the next shift | v1 | The box starts empty. He types the percent his restaurant uses. |
+| Tip share received, with an optional “from whom.” Hidden for servers. Tip-out hidden by default for bussers and hosts. Bartenders start with both | v1 | Support roles mostly receive tip-outs. Servers mostly pay them. A bartender often does both, until he changes that role. |
 | Quick entry: remember usual role, usual wage, and usual tip-out people and amounts or percents | v1 | The fast path should be three numbers: hours, tips, and sales. Everything else is already filled in. |
 | History kept until he deletes one shift, one profile’s shifts, or all data | v1 | His requirement. The app never expires old shifts. |
 | Multiple profiles, each with its own shifts, roles, wage, and settings | v1 | Shared phone, or a second job. |
@@ -87,8 +87,9 @@ Every shift has one job title. The title is a small label on the shift (“Serve
 
 | Starting role | What the form opens with | Tip-out default |
 | --- | --- | --- |
-| Server | Guest tips and tip-out. Tip share is tucked behind “I also received tip share.” | 4% of sales. Labeled as a guess he should fix. |
-| Bartender | Guest tips and tip share received. Tip-out is tucked behind “I also tipped someone out.” | None. |
+| Server | Guest tips and tip-out. Tip share is tucked behind “I also received tip share.” | None, until he saves one. |
+| Other | Guest tips, tip-out paid, and tip share received. | None. |
+| Bartender | Guest tips, tip-out paid, and tip share received. Both sections are open until he edits the role. | None. |
 | Busser | Same posture as Bartender. | None. |
 | Host | Same posture as Bartender. | None. |
 
@@ -170,20 +171,20 @@ Log shift is a full-screen form, not a tab. Edit uses the same form. There is no
 
 ### 5.1 First launch
 
-Shown only when there are zero profiles.
+The first time the app opens, before a profile exists, a welcome page explains what Tip Tracker is: shifts, wages, tips, tip-outs, real earnings, and budgeting around tipped weeks. **Take a quick tour** opens six short cards: log a shift, the tip jar, the pace line, the pay stub camera, Budget, and Settings → Appearance. **Skip** goes straight on. Every tour card has Skip and Done. The choice is stored on the device (`welcome_seen`). It does not show again. Settings has **Replay tour**. Delete everything clears the flag, so the welcome page returns. Neither path creates an account.
+
+Then, only when there are zero profiles:
 
 **Fields**
 
-- Profile name. Placeholder “Olive Garden”. A job or a person. 1–40 characters.
-- Usual role. Chips: Server (selected), Bartender, Busser, Host. This is the role that will be selected on the next shift. All four roles are created either way.
+- Profile name. A job or a person. 1–40 characters. The field does not show an example name or an example wage.
+- Usual role. Chips: Server (selected), Bartender, Busser, Host, Other. This is the role that will be selected on the next shift. All five roles are created either way. Other starts with both tip-out paid and tip share received, and no tip-out lines.
 - Default hourly wage. Required. Used for every role unless he later sets a wage on a specific role.
 - Week starts on. Default Wednesday.
 
-Under the role chips, one line: “Server tip-out starts at 4% of sales. That’s a guess — change the percent or switch it to tips in Settings if your restaurant does it differently.”
-
 **Actions**
 
-- Continue. Creates the profile, the four roles, the Server tip-out default (4% of sales, no recipient name), sets the active profile, opens Home.
+- Continue. Creates the profile and the five roles, with no tip-out percent filled in, sets the active profile, opens Home.
 - A blank name or a blank wage does not continue.
 
 No account, no email, no notification prompt.

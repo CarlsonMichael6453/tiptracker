@@ -4,6 +4,7 @@ import { clockDurationMinutes, clockToMinutes, minutesToClock, parseDurationInpu
 import { parseMoney, parsePercent } from "../../calc/money";
 import { computeShift, type ShiftCalcInput, type ShiftSnapshot, type TipOutKind } from "../../calc/shift";
 import { validateShift, type FieldTipOut, type FieldTipShare, type ValidatableShift } from "../../calc/validate";
+import { effectivePosture } from "../../domain/roleDefaults";
 import type { Profile, Role, ShiftRecord } from "../../domain/types";
 import type { RoleTipOutWrite, ShiftWrite } from "../../repo/repository";
 
@@ -75,7 +76,7 @@ export function emptyLine(): DraftLine {
 export function createDraft(profile: Profile, roles: Role[], date: string): ShiftDraft {
   const role = roles.find((item) => item.id === profile.lastRoleId) ?? roles[0] ?? null;
   const draft = blankDraft(date);
-  return role ? applyRole(draft, role, profile) : draft;
+  return role ? applyRole(draft, role, profile, { copySaved: true }) : draft;
 }
 
 export function draftFromShift(shift: ShiftRecord): ShiftDraft {
@@ -137,14 +138,15 @@ export function draftFromShift(shift: ShiftRecord): ShiftDraft {
   return draft;
 }
 
-export function applyRole(draft: ShiftDraft, role: Role, profile: Profile): ShiftDraft {
+export function applyRole(draft: ShiftDraft, role: Role, profile: Profile, options?: { copySaved?: boolean }): ShiftDraft {
+  const copySaved = options?.copySaved === true;
   const next: ShiftDraft = {
     ...draft,
     roleId: role.id,
     orphanRoleName: null,
-    wageText: formatMoneyInput(role.defaultWageCents ?? profile.defaultWageCents),
+    wageText: draft.wageText,
     saveUsualWage: false,
-    wageTouched: false,
+    wageTouched: draft.wageTouched,
     settlement: role.tipOutSettlement,
     settlementTouched: false,
     tipOutTouched: false,
@@ -153,10 +155,11 @@ export function applyRole(draft: ShiftDraft, role: Role, profile: Profile): Shif
     tipShareTotalText: "",
     tipShareLines: [],
   };
+  const posture = effectivePosture(role);
   const defaults = role.tipOutDefaults;
-  next.tipOutKind = defaults[0]?.kind ?? (role.posture === "tips_out" ? "percent_of_sales" : "flat");
+  next.tipOutKind = defaults[0]?.kind ?? (posture === "tips_out" ? "percent_of_sales" : "flat");
   next.tipOutLines =
-    defaults.length > 0
+    copySaved && defaults.length > 0
       ? defaults.map((line) => ({
           key: nextLineKey(),
           label: line.label ?? "",
@@ -164,11 +167,11 @@ export function applyRole(draft: ShiftDraft, role: Role, profile: Profile): Shif
           percentText: line.basisPoints != null ? formatPercentInput(line.basisPoints) : "",
         }))
       : [emptyLine()];
-  if (role.posture === "tips_out") {
+  if (posture === "tips_out") {
     next.tipOutOpen = true;
     next.tipShareOpen = false;
     next.salesOpen = next.tipOutKind === "percent_of_sales";
-  } else if (role.posture === "receives_share") {
+  } else if (posture === "receives_share") {
     next.tipOutOpen = false;
     next.tipShareOpen = true;
     next.salesOpen = false;
