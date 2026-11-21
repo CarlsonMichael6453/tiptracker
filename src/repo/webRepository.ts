@@ -2,6 +2,7 @@ import { DEFAULT_DOUBLE_THRESHOLD_MINUTES, DEFAULT_LUNCH_CUTOFF_MINUTES } from "
 import { defaultAppearance } from "../ui/appearance";
 import { nowIso } from "../db/time";
 import type { WebDatabase, WebState } from "../db/types";
+import { resolveGoalStyle } from "../calc/goalStyle";
 import { effectivePosture, STARTER_ROLES } from "../domain/roleDefaults";
 import type { Appearance, Posture, Profile, Role, ShiftRecord, TipOutDefault } from "../domain/types";
 import type { RoleTipOutWrite, ShiftWrite } from "./repository";
@@ -52,6 +53,7 @@ export function createProfile(
       appearance: defaultAppearance(),
       weeklyGoalCents: null,
       showTipJar: true,
+      goalIndicator: "jar",
       tipJarCelebratedWeek: null,
       payPeriodStartsOn: 5,
       payPeriodWeeks: 1,
@@ -67,7 +69,7 @@ export function createProfile(
 export function updateProfile(
   db: WebDatabase,
   id: string,
-  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes" | "appearance" | "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek" | "payPeriodStartsOn" | "payPeriodWeeks">>,
+  patch: Partial<Pick<Profile, "name" | "defaultWageCents" | "weekStartsOn" | "lunchCutoffMinutes" | "doubleThresholdMinutes" | "appearance" | "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek" | "goalIndicator" | "payPeriodStartsOn" | "payPeriodWeeks">>,
 ): Promise<void> {
   return db.update((state) => {
     const current = state.profiles.find((profile) => profile.id === id);
@@ -79,7 +81,13 @@ export function updateProfile(
     if (patch.doubleThresholdMinutes != null) current.doubleThresholdMinutes = patch.doubleThresholdMinutes;
     if (patch.appearance != null) current.appearance = patch.appearance;
     if ("weeklyGoalCents" in patch) current.weeklyGoalCents = patch.weeklyGoalCents && patch.weeklyGoalCents > 0 ? patch.weeklyGoalCents : null;
-    if (patch.showTipJar != null) current.showTipJar = patch.showTipJar;
+    if (patch.goalIndicator != null) {
+      current.goalIndicator = resolveGoalStyle(patch.goalIndicator, patch.goalIndicator !== "off");
+      current.showTipJar = current.goalIndicator !== "off";
+    } else if (patch.showTipJar != null) {
+      current.showTipJar = patch.showTipJar;
+      if (!current.goalIndicator) current.goalIndicator = patch.showTipJar ? "jar" : "off";
+    }
     if ("tipJarCelebratedWeek" in patch) current.tipJarCelebratedWeek = patch.tipJarCelebratedWeek ?? null;
     if (patch.payPeriodStartsOn != null) current.payPeriodStartsOn = patch.payPeriodStartsOn;
     if (patch.payPeriodWeeks === 1 || patch.payPeriodWeeks === 2) current.payPeriodWeeks = patch.payPeriodWeeks;

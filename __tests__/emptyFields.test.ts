@@ -26,6 +26,7 @@ describe("empty inputs", () => {
       appearance: defaultAppearance(),
       weeklyGoalCents: null,
       showTipJar: true,
+      goalIndicator: "jar",
       tipJarCelebratedWeek: null,
       payPeriodStartsOn: 5,
       payPeriodWeeks: 1,

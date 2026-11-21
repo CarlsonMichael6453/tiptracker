@@ -94,6 +94,8 @@ export type Profile = {
   /** Weekly take-home goal in cents. Null until they set one. */
   weeklyGoalCents: number | null;
   showTipJar: boolean;
+  /** Header mark for the weekly goal. Off hides it. Missing older profiles use the tip jar. */
+  goalIndicator: string;
   /** Week-start date of the last 100% celebration, so it plays once per week. */
   tipJarCelebratedWeek: string | null;
   /** Weekday the pay period starts. Separate from the dashboard week. Default Friday. */

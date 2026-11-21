@@ -1,5 +1,6 @@
 import { isCivilDate } from "../calc/dates";
 import type { GoalEntry, GoalEntryKind, GoalHorizon, GoalStatus, Profile, SavingsGoal } from "../domain/types";
+import { resolveGoalStyle } from "../calc/goalStyle";
 import { parseAppearance } from "../ui/appearance";
 import { emptyWebState, type WebDatabase, type WebState } from "./types";
 
@@ -79,6 +80,7 @@ function normalizeProfile(profile: Profile): Profile {
     appearance: parseAppearance(profile.appearance),
     weeklyGoalCents: typeof goal === "number" && Number.isInteger(goal) && goal > 0 ? goal : null,
     showTipJar: profile.showTipJar === false ? false : true,
+    goalIndicator: resolveGoalStyle(profile.goalIndicator, profile.showTipJar !== false),
     tipJarCelebratedWeek: typeof celebrated === "string" && isCivilDate(celebrated) ? celebrated : null,
     payPeriodStartsOn: profile.payPeriodStartsOn >= 0 && profile.payPeriodStartsOn <= 6 ? profile.payPeriodStartsOn : 5,
     payPeriodWeeks: profile.payPeriodWeeks === 2 ? 2 : 1,

@@ -16,6 +16,7 @@ const profile: Profile = {
   appearance: defaultAppearance(),
   weeklyGoalCents: null,
   showTipJar: true,
+  goalIndicator: "jar",
   tipJarCelebratedWeek: null,
   payPeriodStartsOn: 5,
   payPeriodWeeks: 1,

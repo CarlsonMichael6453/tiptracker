@@ -3,7 +3,7 @@ import { SCHEMA_SQL } from "./schema";
 import type { AppDatabase } from "./types";
 
 const DATABASE_NAME = "tiptracker.db";
-const SCHEMA_VERSION = 7;
+const SCHEMA_VERSION = 8;
 
 const MIGRATION_V2 = `
 ALTER TABLE profile ADD COLUMN appearance_json TEXT;
@@ -65,6 +65,10 @@ CREATE TABLE IF NOT EXISTS pay_stub (
 );
 `;
 
+const MIGRATION_V8 = `
+ALTER TABLE profile ADD COLUMN goal_indicator TEXT;
+`;
+
 const MIGRATION_V7 = `
 ALTER TABLE role ADD COLUMN tip_out_customized INTEGER NOT NULL DEFAULT 0;
 `;
@@ -98,6 +102,7 @@ async function openAndMigrate(): Promise<AppDatabase> {
     if (version < 5) await db.execAsync(MIGRATION_V5);
     if (version < 6) await db.execAsync(MIGRATION_V6);
     if (version < 7) await db.execAsync(MIGRATION_V7);
+    if (version < 8) await db.execAsync(MIGRATION_V8);
     await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION};`);
   } else if (version !== SCHEMA_VERSION) {
     throw new Error(`This Tip Tracker file is version ${version}. This app reads version ${SCHEMA_VERSION}.`);

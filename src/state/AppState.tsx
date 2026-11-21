@@ -24,7 +24,7 @@ type AppContextValue = {
   setActive: (id: string) => Promise<void>;
   updateAppearance: (value: Appearance) => Promise<void>;
   saveProfileAppearance: (value: AppearanceSettings) => Promise<void>;
-  saveTipJar: (patch: Partial<Pick<Profile, "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek">>) => Promise<void>;
+  saveTipJar: (patch: Partial<Pick<Profile, "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek" | "goalIndicator">>) => Promise<void>;
   welcomeSeen: boolean;
   markWelcomeSeen: () => Promise<void>;
 };
@@ -114,7 +114,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const saveTipJar = useCallback(
-    async (patch: Partial<Pick<Profile, "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek">>) => {
+    async (patch: Partial<Pick<Profile, "weeklyGoalCents" | "showTipJar" | "tipJarCelebratedWeek" | "goalIndicator">>) => {
       if (!db || !activeProfile) return;
       const next = { ...activeProfile, ...patch };
       setActiveProfile(next);
