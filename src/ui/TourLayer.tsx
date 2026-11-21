@@ -156,7 +156,8 @@ function CoachMark({
       }
     : null;
   const captionW = Math.min(340, screenW - 24);
-  const captionTop = hole ? placeCaption(hole, screenW, screenH, captionW) : { top: screenH * 0.3, left: 12, pointUp: false };
+  const captionH = controls.getStarted ? 250 : 200;
+  const captionTop = hole ? placeCaption(hole, screenW, screenH, captionW, captionH) : { top: Math.max(8, screenH - captionH - 12), left: 12, pointUp: false, arrow: 24 };
   const dim = "rgba(16, 18, 14, 0.62)";
 
   return (
@@ -185,9 +186,10 @@ function CoachMark({
           gap: 10,
           borderWidth: 1,
           borderColor: palette.line,
+          maxHeight: screenH - 16,
         }}
       >
-        {hole && captionTop.pointUp ? <Pointer up color={palette.card} /> : null}
+        {hole ? <Pointer up={captionTop.pointUp} color={palette.card} left={captionTop.arrow} /> : null}
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "800" }}>{step.title}</Text>
         <Text style={{ color: palette.text, fontSize: 16, lineHeight: 22 }}>{step.body}</Text>
         {controls.next ? <TourButton label="Next" onPress={() => onAct("next")} /> : null}
@@ -198,13 +200,14 @@ function CoachMark({
   );
 }
 
-function placeCaption(hole: { x: number; y: number; w: number; h: number }, screenW: number, screenH: number, captionW: number) {
-  const needed = 210;
-  const below = hole.y + hole.h + 14;
-  const pointUp = below + needed < screenH - 8;
-  const top = pointUp ? below : Math.max(12, hole.y - needed - 8);
+function placeCaption(hole: { x: number; y: number; w: number; h: number }, screenW: number, screenH: number, captionW: number, needed: number) {
+  const below = hole.y + hole.h + 16;
+  const above = hole.y - needed - 16;
+  const pointUp = below + needed <= screenH - 8;
+  const top = pointUp ? below : above >= 8 ? above : 8;
   const left = Math.max(12, Math.min(hole.x, screenW - captionW - 12));
-  return { top: Math.max(8, Math.min(top, screenH - needed)), left, pointUp };
+  const arrow = Math.max(16, Math.min(hole.x + hole.w / 2 - left - 9, captionW - 28));
+  return { top: Math.max(8, Math.min(top, screenH - needed - 8)), left, pointUp, arrow };
 }
 
 function TourButton({ label, onPress, secondary = false }: { label: string; onPress: () => void; secondary?: boolean }) {
@@ -233,21 +236,25 @@ type Measurable = {
   measureInWindow: (callback: (x: number, y: number, width: number, height: number) => void) => void;
 };
 
-function Pointer({ up, color }: { up: boolean; color: string }) {
+function Pointer({ up, color, left }: { up: boolean; color: string; left: number }) {
   return (
     <View
+      pointerEvents="none"
       style={{
-        alignSelf: "flex-start",
-        marginLeft: 24,
-        marginBottom: up ? -4 : 0,
+        position: "absolute",
+        left,
+        top: up ? -12 : undefined,
+        bottom: up ? undefined : -12,
         width: 0,
         height: 0,
         borderLeftWidth: 9,
         borderRightWidth: 9,
         borderBottomWidth: up ? 12 : 0,
+        borderTopWidth: up ? 0 : 12,
         borderLeftColor: "transparent",
         borderRightColor: "transparent",
         borderBottomColor: up ? color : "transparent",
+        borderTopColor: up ? "transparent" : color,
       }}
     />
   );
