@@ -90,8 +90,8 @@ Every shift has one job title. The title is a small label on the shift (“Serve
 | Server | Guest tips and tip-out. Tip share is tucked behind “I also received tip share.” | None, until he saves one. |
 | Other | Guest tips, tip-out paid, and tip share received. | None. |
 | Bartender | Guest tips, tip-out paid, and tip share received. Both sections are open until he edits the role. | None. |
-| Busser | Same posture as Bartender. | None. |
-| Host | Same posture as Bartender. | None. |
+| Busser | Guest tips and tip share received. Tip-out paid stays behind “I also tipped someone out” until he opens it. | None. |
+| Host | Same as Busser: receive only, until he edits the role. | None. |
 
 He can rename these, delete them, add his own (“To-go”, “Runner”, “Expo”), and set each one’s posture:
 
