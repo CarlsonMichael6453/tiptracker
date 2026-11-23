@@ -1,3 +1,5 @@
+import { addDays, MONTH_SHORT } from "../calc/dates";
+
 /**
  * Pro is unlocked while Michael is testing.
  * TODO: RevenueCat / StoreKit / Play Billing. There is no purchase code yet.
@@ -10,6 +12,45 @@ export const PRO_PRICES = {
   year: "$19.99/year",
   lifetime: "$39.99 lifetime",
 };
+
+/** Monthly and yearly start with this many free days. Lifetime does not. */
+export const TRIAL_DAYS = 7;
+
+export const TRIAL_CANCEL_NOTE = "You can cancel in your phone’s subscription settings.";
+
+export const PURCHASE_COMING_SOON = "Purchases coming soon, Pro is unlocked for testing";
+
+export type ProPlan = "month" | "year" | "lifetime";
+
+export function planHasTrial(plan: ProPlan): plan is "month" | "year" {
+  return plan === "month" || plan === "year";
+}
+
+/** “Nov 30”, with no year. */
+export function formatTrialDate(iso: string): string {
+  const [, month, day] = iso.split("-").map(Number);
+  const name = MONTH_SHORT[(month ?? 0) - 1];
+  if (!name || !day) throw new Error(`Not a civil date: ${iso}`);
+  return `${name} ${day}`;
+}
+
+export function trialChargeDate(today: string, days = TRIAL_DAYS): string {
+  return addDays(today, days);
+}
+
+export function trialOffer(plan: "month" | "year", today: string): string {
+  const when = formatTrialDate(trialChargeDate(today));
+  return `Free for ${TRIAL_DAYS} days, then ${PRO_PRICES[plan]}. Cancel anytime before ${when} and you won’t be charged.`;
+}
+
+export function planButtonLabel(plan: ProPlan): string {
+  if (plan === "lifetime") return `Buy ${PRO_PRICES.lifetime}`;
+  return `Try ${TRIAL_DAYS} days free`;
+}
+
+export function lifetimePurchaseNote(): string {
+  return `One payment, ${PRO_PRICES.lifetime}. No trial on a one-time purchase.`;
+}
 
 export const FREE_FEATURES = [
   "Shift logging",
