@@ -4,12 +4,14 @@ import { Alert, Platform, Pressable, View } from "react-native";
 import Constants from "expo-constants";
 import { formatClock, formatHoursPhrase, formatMoneyInput } from "../../src/calc/format";
 import { parseMoney } from "../../src/calc/money";
+import { shiftsToCsv } from "../../src/calc/shiftExport";
 import type { Role } from "../../src/domain/types";
 import {
   countShifts,
   deleteAllShifts,
   deleteProfile,
   listRoles,
+  listShifts,
   reorderRoles,
   updateProfile,
 } from "../../src/repo/repository";
@@ -31,6 +33,7 @@ export default function Settings() {
   const activeProfile = useWorkingProfile();
   const { palette } = useTheme();
   const [roles, setRoles] = useState<Role[]>([]);
+  const [exportText, setExportText] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [wage, setWage] = useState("");
   const [weekStartsOn, setWeekStartsOn] = useState(3);
@@ -213,6 +216,31 @@ export default function Settings() {
         <Button label="Add a role" kind="secondary" onPress={() => router.push("/role/new")} />
       </Card>
 
+      <Card>
+        <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>Back up your shifts</Text>
+        <Muted>
+          {Platform.OS === "web"
+            ? "Downloads a CSV of this profile’s shifts. Shifts live only in this browser, so a copy elsewhere is the only backup."
+            : "Makes a CSV of this profile’s shifts that you can press and hold to copy, then paste into Notes or email to yourself. Shifts live only on this phone, so a copy elsewhere is the only backup."}
+        </Muted>
+        <Button
+          label="Make a CSV of my shifts"
+          kind="secondary"
+          onPress={() => {
+            void listShifts(database, profile.id).then((shifts) => {
+              const csv = shiftsToCsv(shifts);
+              setExportText(csv);
+              downloadCsvOnWeb(csv, csvFilename(profile.name));
+            });
+          }}
+        />
+        {exportText ? (
+          <Text selectable style={{ color: palette.text, fontSize: 12 }}>
+            {exportText}
+          </Text>
+        ) : null}
+      </Card>
+
       <Button label="Delete all shifts on this profile" kind="danger" onPress={() => void confirmDeleteShifts()} />
       <Button label="Delete this profile" kind="danger" onPress={confirmDeleteProfile} />
 
@@ -264,6 +292,32 @@ export default function Settings() {
       <Button label="Delete all data" kind="danger" onPress={() => router.push("/data/delete")} />
     </Screen>
   );
+}
+
+function csvFilename(profileName: string): string {
+  const safe = profileName.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "") || "shifts";
+  const now = new Date();
+  const day = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  return `tip-tracker-${safe}-${day}.csv`;
+}
+
+/** Browser-only file download. Native has no share-sheet dependency in this app, so it shows copyable text instead. */
+function downloadCsvOnWeb(text: string, filename: string): boolean {
+  if (Platform.OS !== "web") return false;
+  const g = globalThis as typeof globalThis & {
+    document?: { createElement: (tag: string) => { href: string; download: string; click: () => void } };
+    Blob?: new (parts: string[], options?: { type: string }) => object;
+    URL?: { createObjectURL: (blob: object) => string; revokeObjectURL: (url: string) => void };
+  };
+  if (!g.document || !g.Blob || !g.URL) return false;
+  const blob = new g.Blob([text], { type: "text/csv;charset=utf-8" });
+  const url = g.URL.createObjectURL(blob);
+  const link = g.document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  g.URL.revokeObjectURL(url);
+  return true;
 }
 
 function postureLabel(posture: Role["posture"]): string {
