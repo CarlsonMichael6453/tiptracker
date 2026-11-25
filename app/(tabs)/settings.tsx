@@ -4,8 +4,10 @@ import { Alert, Platform, Pressable, View } from "react-native";
 import Constants from "expo-constants";
 import { formatClock, formatHoursPhrase, formatMoneyInput } from "../../src/calc/format";
 import { parseMoney } from "../../src/calc/money";
+import { backupFilename, parseBackup } from "../../src/calc/backup";
 import { shiftsToCsv } from "../../src/calc/shiftExport";
 import type { Role } from "../../src/domain/types";
+import { exportBackup, importBackup } from "../../src/repo/backup";
 import {
   countShifts,
   deleteAllShifts,
@@ -34,6 +36,10 @@ export default function Settings() {
   const { palette } = useTheme();
   const [roles, setRoles] = useState<Role[]>([]);
   const [exportText, setExportText] = useState<string | null>(null);
+  const [backupText, setBackupText] = useState<string | null>(null);
+  const [pasteText, setPasteText] = useState("");
+  const [showPaste, setShowPaste] = useState(false);
+  const [backupMessage, setBackupMessage] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [wage, setWage] = useState("");
   const [weekStartsOn, setWeekStartsOn] = useState(3);
@@ -134,6 +140,57 @@ export default function Settings() {
     );
   }
 
+  const saveBackup = async () => {
+    setBackupMessage(null);
+    const json = await exportBackup(database);
+    const filename = backupFilename();
+    const downloaded = downloadFileOnWeb(json, filename, "application/json;charset=utf-8");
+    if (downloaded) {
+      setBackupText(null);
+      setBackupMessage(`Downloaded ${filename}.`);
+      return;
+    }
+    setBackupText(json);
+  };
+
+  const applyBackup = async (json: string) => {
+    setBackupMessage(null);
+    const parsed = parseBackup(json);
+    if (!parsed.ok) {
+      setBackupMessage(parsed.error);
+      return;
+    }
+    confirmReplaceWithBackup(() => {
+      void importBackup(database, json).then(async (result) => {
+        if (!result.ok) {
+          setBackupMessage(result.error);
+          return;
+        }
+        setPasteText("");
+        setShowPaste(false);
+        setBackupText(null);
+        setBackupMessage("Backup restored.");
+        await reload();
+      });
+    });
+  };
+
+  const startRestore = () => {
+    setBackupMessage(null);
+    if (Platform.OS === "web") {
+      void pickTextFileOnWeb().then((text) => {
+        if (text == null) return;
+        if (!text.trim()) {
+          setBackupMessage("That file was empty.");
+          return;
+        }
+        void applyBackup(text);
+      });
+      return;
+    }
+    setShowPaste(true);
+  };
+
   const move = async (index: number, direction: -1 | 1) => {
     const next = [...roles];
     const target = index + direction;
@@ -220,8 +277,8 @@ export default function Settings() {
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>Back up your shifts</Text>
         <Muted>
           {Platform.OS === "web"
-            ? "Downloads a CSV of this profile’s shifts. Shifts live only in this browser, so a copy elsewhere is the only backup."
-            : "Makes a CSV of this profile’s shifts that you can press and hold to copy, then paste into Notes or email to yourself. Shifts live only on this phone, so a copy elsewhere is the only backup."}
+            ? "A CSV is this profile’s shifts. A backup is everything: profiles, roles, shifts, bills, envelopes, goals, pay stubs, and settings. Shifts live only in this browser, so a copy elsewhere is the only backup."
+            : "A CSV is this profile’s shifts, as text you can copy. A backup is everything: profiles, roles, shifts, bills, envelopes, goals, pay stubs, and settings. Shifts live only on this phone, so a copy elsewhere is the only backup."}
         </Muted>
         <Button
           label="Make a CSV of my shifts"
@@ -230,7 +287,7 @@ export default function Settings() {
             void listShifts(database, profile.id).then((shifts) => {
               const csv = shiftsToCsv(shifts);
               setExportText(csv);
-              downloadCsvOnWeb(csv, csvFilename(profile.name));
+              downloadFileOnWeb(csv, csvFilename(profile.name), "text/csv;charset=utf-8");
             });
           }}
         />
@@ -239,6 +296,27 @@ export default function Settings() {
             {exportText}
           </Text>
         ) : null}
+        <Button label="Save a backup" kind="secondary" onPress={() => void saveBackup()} />
+        {backupText ? (
+          <Text selectable style={{ color: palette.text, fontSize: 12 }}>
+            {backupText}
+          </Text>
+        ) : null}
+        <Button label="Restore from backup" kind="secondary" onPress={startRestore} />
+        {showPaste ? (
+          <>
+            <Field
+              label="Paste a backup"
+              value={pasteText}
+              onChangeText={setPasteText}
+              placeholder=""
+              keyboard="default"
+              multiline
+            />
+            <Button label="Use this backup" kind="secondary" onPress={() => void applyBackup(pasteText)} />
+          </>
+        ) : null}
+        {backupMessage ? <Muted>{backupMessage}</Muted> : null}
       </Card>
 
       <Button label="Delete all shifts on this profile" kind="danger" onPress={() => void confirmDeleteShifts()} />
@@ -302,7 +380,7 @@ function csvFilename(profileName: string): string {
 }
 
 /** Browser-only file download. Native has no share-sheet dependency in this app, so it shows copyable text instead. */
-function downloadCsvOnWeb(text: string, filename: string): boolean {
+function downloadFileOnWeb(text: string, filename: string, mime: string): boolean {
   if (Platform.OS !== "web") return false;
   const g = globalThis as typeof globalThis & {
     document?: { createElement: (tag: string) => { href: string; download: string; click: () => void } };
@@ -310,7 +388,7 @@ function downloadCsvOnWeb(text: string, filename: string): boolean {
     URL?: { createObjectURL: (blob: object) => string; revokeObjectURL: (url: string) => void };
   };
   if (!g.document || !g.Blob || !g.URL) return false;
-  const blob = new g.Blob([text], { type: "text/csv;charset=utf-8" });
+  const blob = new g.Blob([text], { type: mime });
   const url = g.URL.createObjectURL(blob);
   const link = g.document.createElement("a");
   link.href = url;
@@ -318,6 +396,60 @@ function downloadCsvOnWeb(text: string, filename: string): boolean {
   link.click();
   g.URL.revokeObjectURL(url);
   return true;
+}
+
+function pickTextFileOnWeb(): Promise<string | null> {
+  if (Platform.OS !== "web") return Promise.resolve(null);
+  const web = globalThis as unknown as {
+    document?: {
+      createElement: (tag: string) => {
+        type: string;
+        accept: string;
+        onchange: ((event: { target?: { files?: ArrayLike<unknown> | null } }) => void) | null;
+        click: () => void;
+      };
+    };
+    FileReader?: new () => {
+      result: string | ArrayBuffer | null;
+      onload: (() => void) | null;
+      onerror: (() => void) | null;
+      readAsText: (file: unknown) => void;
+    };
+  };
+  if (!web.document || !web.FileReader) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const input = web.document!.createElement("input");
+    input.type = "file";
+    input.accept = "application/json,.json,text/plain";
+    input.onchange = (event) => {
+      const files = event.target?.files;
+      const file = files && files.length > 0 ? files[0] : null;
+      if (!file) {
+        resolve(null);
+        return;
+      }
+      const reader = new web.FileReader!();
+      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsText(file);
+    };
+    input.click();
+  });
+}
+
+function confirmReplaceWithBackup(onYes: () => void): void {
+  const title = "Replace everything with this backup?";
+  const message =
+    "This removes every profile, shift, goal, bill, and pay stub that’s here now, then loads the backup. Tip Tracker does not keep a copy of what is here now.";
+  const web = globalThis as typeof globalThis & { confirm?: (text: string) => boolean };
+  if (Platform.OS === "web" && typeof web.confirm === "function") {
+    if (web.confirm(`${title}\n\n${message}`)) onYes();
+    return;
+  }
+  Alert.alert(title, message, [
+    { text: "Cancel", style: "cancel" },
+    { text: "Replace everything", style: "destructive", onPress: onYes },
+  ]);
 }
 
 function postureLabel(posture: Role["posture"]): string {
