@@ -26,6 +26,7 @@ import { defaultAppearance } from "../../src/ui/appearance";
 import { Button, Card, ErrorList, Field, Muted, Screen, Title, useScreenScroll, WeekStartPicker } from "../../src/ui/components";
 import { useWorkingProfile } from "../../src/ui/TourDemo";
 import { TourAnchor, useTour } from "../../src/ui/TourLayer";
+import { REPLAY_TOUR_LABEL } from "../../src/welcome/appearanceTour";
 import { TOUR_GUEST_ID } from "../../src/welcome/tourDemo";
 import { useTheme } from "../../src/ui/theme";
 import { Text } from "../../src/ui/text";
@@ -212,7 +213,7 @@ export default function Settings() {
           <Text style={{ color: palette.text, fontWeight: "700", fontSize: 17 }}>Send feedback</Text>
           <Text style={{ color: palette.muted, fontSize: 13 }}>A rating and a note. Your shifts stay on this device.</Text>
         </Pressable>
-        <Button label="Replay tour" kind="secondary" onPress={() => router.push("/tour?replay=1")} />
+        <Button label={REPLAY_TOUR_LABEL} kind="secondary" onPress={() => router.push("/tour?replay=1")} />
         <Button label="See Pro" kind="secondary" onPress={() => router.push("/pro")} />
       </Card>
       <Card>

@@ -52,10 +52,10 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     id: "appearance",
-    target: "appearance",
-    href: "/(tabs)/settings",
+    target: "appearance-preview",
+    href: "/(tabs)",
     title: "Appearance",
-    body: "Fonts and colors are here. The weekly goal mark style is on this same screen, under This profile.",
+    body: "Here's how fonts and colors can look. Pick yours anytime in Settings.",
   },
 ];
 

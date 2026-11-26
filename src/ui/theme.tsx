@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { Platform, View } from "react-native";
 import { useApp } from "../state/AppState";
 import { relativeLuminance } from "./contrast";
@@ -26,10 +26,18 @@ const ThemeContext = createContext<ThemeValue>({
   appearance: defaultAppearance(),
 });
 
+const TourAppearanceContext = createContext<(value: AppearanceSettings | null) => void>(() => undefined);
+
+/** Swap the on-screen look without writing it. Null restores the saved appearance. */
+export function useSetTourAppearance() {
+  return useContext(TourAppearanceContext);
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const { activeProfile } = useApp();
+  const [tourLook, setTourLook] = useState<AppearanceSettings | null>(null);
   useAppFonts();
-  const appearance = activeProfile?.appearance ?? defaultAppearance();
+  const appearance = tourLook ?? activeProfile?.appearance ?? defaultAppearance();
   const named = colorChoice(appearance.colorTheme);
   const fonts = fontChoice(appearance.font);
   const palette = named.palette ?? buildPalette(appearance);
@@ -50,12 +58,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [fonts.body]);
   return (
-    <ThemeContext.Provider value={{ palette, scheme, decorative, appearance, fontFamily: fonts.body, boldFontFamily: fonts.bold }}>
-      <View style={{ flex: 1, backgroundColor: named.palette ? palette.bg : colorsFor(appearance)[0] }}>
-        {decorative ? <SceneBackground settings={appearance} /> : null}
-        <View style={{ flex: 1 }}>{children}</View>
-      </View>
-    </ThemeContext.Provider>
+    <TourAppearanceContext.Provider value={setTourLook}>
+      <ThemeContext.Provider value={{ palette, scheme, decorative, appearance, fontFamily: fonts.body, boldFontFamily: fonts.bold }}>
+        <View style={{ flex: 1, backgroundColor: named.palette ? palette.bg : colorsFor(appearance)[0] }}>
+          {decorative ? <SceneBackground settings={appearance} /> : null}
+          <View style={{ flex: 1 }}>{children}</View>
+        </View>
+      </ThemeContext.Provider>
+    </TourAppearanceContext.Provider>
   );
 }
 

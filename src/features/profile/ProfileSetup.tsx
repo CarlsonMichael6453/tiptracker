@@ -47,14 +47,14 @@ export function ProfileSetup({
     <Screen withHeader={withHeader}>
       <Title>Quick intro?</Title>
       <Text style={{ color: palette.text, fontSize: 17, lineHeight: 24 }}>
-        Just add your name or your job so we know whose tips these are. Or tell us a little about yourself, no pressure.
+        Add a name or a job so we know whose tips these are.
       </Text>
       <Field label="Name" value={name} keyboard="default" onChangeText={setName} />
       <View style={{ gap: 6 }}>
         <Text style={{ color: palette.muted, fontWeight: "600" }}>Job</Text>
         <Chips value={job} onChange={setJob} options={INTRO_JOBS.map((item) => ({ value: item, label: item }))} />
       </View>
-      <Field label="Hourly wage, if you want" value={wage} onChangeText={setWage} hint="You can add this later." />
+      <Field label="Hourly wage" value={wage} onChangeText={setWage} hint="Optional, you can add this later." />
       <ErrorList errors={errors} />
       <Button label={busy ? "Saving…" : submitLabel} onPress={() => void submit()} disabled={busy} />
     </Screen>
