@@ -9,6 +9,7 @@ import {
   appearanceTourScrollAnimated,
   clampTourRect,
   REPLAY_TOUR_LABEL,
+  APPEARANCE_TOUR_FOCUS_Y,
   scrollYToWindowTarget,
 } from "../src/welcome/appearanceTour";
 import { TOUR_STEPS, appEntry, firstLaunch, shouldShowWelcome, stepAfter, tourControls } from "../src/welcome/tour";
@@ -87,9 +88,10 @@ describe("welcome and tour", () => {
   test("the last tour step scrolls to fonts and colors, and jumps when motion is reduced", () => {
     expect(appearanceTourScrollAnimated(false)).toBe(true);
     expect(appearanceTourScrollAnimated(true)).toBe(false);
-    expect(scrollYToWindowTarget(0, 800, 72)).toBe(728);
-    expect(scrollYToWindowTarget(400, 72, 72)).toBe(400);
-    expect(scrollYToWindowTarget(40, 10, 72)).toBe(0);
+    expect(APPEARANCE_TOUR_FOCUS_Y).toBe(312);
+    expect(scrollYToWindowTarget(0, 800, APPEARANCE_TOUR_FOCUS_Y)).toBe(488);
+    expect(scrollYToWindowTarget(400, APPEARANCE_TOUR_FOCUS_Y, APPEARANCE_TOUR_FOCUS_Y)).toBe(400);
+    expect(scrollYToWindowTarget(40, 10, APPEARANCE_TOUR_FOCUS_Y)).toBe(0);
     const hole = clampTourRect({ x: 16, y: -80, width: 300, height: 900 }, 390, 700);
     expect(hole).toEqual({ x: 8, y: 0, w: 316, h: 700 });
     expect(clampTourRect({ x: 20, y: 800, width: 100, height: 40 }, 390, 700)).toBeNull();

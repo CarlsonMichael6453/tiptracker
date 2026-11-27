@@ -18,8 +18,11 @@ export const APPEARANCE_STEP_COPY = {
 
 export const REPLAY_TOUR_LABEL = "Replay tour";
 
+/** Caption stays at the top so it does not cover the fonts and colors. */
+export const APPEARANCE_TOUR_CAPTION_TOP = 16;
+export const APPEARANCE_TOUR_CAPTION_H = 280;
 /** Window Y, in points, where the fonts and colors block should sit during the last tour step. */
-export const APPEARANCE_TOUR_FOCUS_Y = 72;
+export const APPEARANCE_TOUR_FOCUS_Y = APPEARANCE_TOUR_CAPTION_TOP + APPEARANCE_TOUR_CAPTION_H + 16;
 
 /**
  * Which preview is on screen. Null means the pass is over, or motion is reduced,

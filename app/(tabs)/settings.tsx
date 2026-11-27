@@ -22,7 +22,6 @@ import { resolveGoalStyle } from "../../src/calc/goalStyle";
 import { AppearancePicker } from "../../src/ui/AppearancePicker";
 import { GoalStylePicker } from "../../src/ui/GoalMark";
 import { AppearanceType } from "../../src/ui/AppearanceType";
-import { defaultAppearance } from "../../src/ui/appearance";
 import { Button, Card, ErrorList, Field, Muted, Screen, Title, useScreenScroll, WeekStartPicker } from "../../src/ui/components";
 import { useWorkingProfile } from "../../src/ui/TourDemo";
 import { TourAnchor, useTour } from "../../src/ui/TourLayer";
@@ -42,10 +41,20 @@ type Measurable = {
 };
 
 export default function Settings() {
+  return (
+    <Screen tipJar>
+      <SettingsContent />
+    </Screen>
+  );
+}
+
+/** Lives inside Screen so useScreenScroll can see the page scroller. */
+function SettingsContent() {
+
 
   const { db, profiles, reload, setActive, saveProfileAppearance, saveTipJar } = useApp();
   const activeProfile = useWorkingProfile();
-  const { palette } = useTheme();
+  const { palette, appearance } = useTheme();
   const [roles, setRoles] = useState<Role[]>([]);
   const [exportText, setExportText] = useState<string | null>(null);
   const [backupText, setBackupText] = useState<string | null>(null);
@@ -75,21 +84,27 @@ export default function Settings() {
       savedScrollY.current = scroller?.getScrollY?.() ?? 0;
     }
     const animated = appearanceTourScrollAnimated(reduceMotion);
+    let locked = false;
     const place = () => {
       const focus = fontsColorsRef.current;
       const current = scroll?.current;
-      if (!focus || !current?.getScrollY) return;
+      if (!focus || !current?.getScrollY || locked) return;
       focus.measureInWindow((_x, y, _w, h) => {
-        if (h <= 0) return;
+        if (h <= 0 || locked) return;
         const currentY = current.getScrollY();
         const nextY = scrollYToWindowTarget(currentY, y, APPEARANCE_TOUR_FOCUS_Y);
-        if (Math.abs(nextY - currentY) > 2) {
-          current.scrollTo({ y: nextY, animated });
+        if (Math.abs(y - APPEARANCE_TOUR_FOCUS_Y) <= 8) {
+          locked = true;
+          return;
         }
+        // Skip until the fonts and colors block has been laid out below the focus line.
+        if (y < APPEARANCE_TOUR_FOCUS_Y + 40 && currentY < 8) return;
+        locked = true;
+        current.scrollTo({ y: nextY, animated });
       });
     };
     placeFocus.current = place;
-    const timers = [60, 280, 700, 1200].map((delay) => setTimeout(place, delay));
+    const timers = [80, 300, 600].map((delay) => setTimeout(place, delay));
     return () => {
       placeFocus.current = () => undefined;
       timers.forEach(clearTimeout);
@@ -247,7 +262,7 @@ export default function Settings() {
   };
 
   return (
-    <Screen tipJar>
+    <>
       <Title>Settings</Title>
       <Card>
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>Support</Text>
@@ -388,14 +403,20 @@ export default function Settings() {
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>Appearance</Text>
         <Muted>Saved on this profile. Every pattern is on this screen. Pick one, then change its colors.</Muted>
         <AppearancePicker
-          value={activeProfile.appearance ?? defaultAppearance()}
-          onChange={(next) => void saveProfileAppearance(next)}
+          value={appearance}
+          onChange={(next) => {
+            if (tourTarget === "appearance") return;
+            void saveProfileAppearance(next);
+          }}
         />
         <TourAnchor id="appearance">
           <View ref={fontsColorsRef as never} collapsable={false} onLayout={() => placeFocus.current()}>
             <AppearanceType
-              value={activeProfile.appearance ?? defaultAppearance()}
-              onChange={(next) => void saveProfileAppearance(next)}
+              value={appearance}
+              onChange={(next) => {
+                if (tourTarget === "appearance") return;
+                void saveProfileAppearance(next);
+              }}
             />
           </View>
         </TourAnchor>
@@ -413,7 +434,7 @@ export default function Settings() {
       </Card>
 
       <Button label="Delete all data" kind="danger" onPress={() => router.push("/data/delete")} />
-    </Screen>
+    </>
   );
 }
 
