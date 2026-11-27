@@ -144,7 +144,8 @@ export function applyRole(draft: ShiftDraft, role: Role, profile: Profile, optio
     ...draft,
     roleId: role.id,
     orphanRoleName: null,
-    wageText: draft.wageText,
+    // The role's usual wage, else the profile's, unless he already typed one.
+    wageText: draft.wageTouched ? draft.wageText : usualWageText(role, profile),
     saveUsualWage: false,
     wageTouched: draft.wageTouched,
     settlement: role.tipOutSettlement,
@@ -181,6 +182,12 @@ export function applyRole(draft: ShiftDraft, role: Role, profile: Profile, optio
     next.salesOpen = next.tipOutKind === "percent_of_sales";
   }
   return next;
+}
+
+/** The wage a new shift starts with. A stored 0 means it was left blank at setup. */
+export function usualWageText(role: Role, profile: Profile): string {
+  const cents = role.defaultWageCents ?? profile.defaultWageCents;
+  return cents != null && cents > 0 ? formatMoneyInput(cents) : "";
 }
 
 export function roleIsTouched(draft: ShiftDraft): boolean {

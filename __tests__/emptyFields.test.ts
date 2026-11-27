@@ -1,6 +1,6 @@
 import { parseMoney } from "../src/calc/money";
 import { emptyBudget } from "../src/budget/types";
-import { createDraft } from "../src/features/shift/model";
+import { createDraft, usualWageText } from "../src/features/shift/model";
 import type { Profile, Role } from "../src/domain/types";
 import { defaultAppearance } from "../src/ui/appearance";
 
@@ -44,10 +44,19 @@ describe("empty inputs", () => {
       tipOutDefaults: [],
     };
     const draft = createDraft(profile, [server], "2026-11-21");
-    expect(draft.wageText).toBe("");
+    // His own saved wage is not a sample amount. The spec prefills it.
+    expect(draft.wageText).toBe("16");
     expect(draft.tipOutLines[0]?.percentText).toBe("");
     expect(draft.tipOutLines[0]?.amountText).toBe("");
     expect(draft.tipsTotalText).toBe("");
+  });
+
+  test("a new shift uses the role wage, then the profile wage, and leaves a blank setup wage blank", () => {
+    const profile = { defaultWageCents: 1600 } as Profile;
+    const role = { defaultWageCents: null } as Role;
+    expect(usualWageText(role, profile)).toBe("16");
+    expect(usualWageText({ defaultWageCents: 1850 } as Role, profile)).toBe("18.50");
+    expect(usualWageText(role, { defaultWageCents: 0 } as Profile)).toBe("");
   });
 
   test("input boxes do not carry example placeholder text", () => {

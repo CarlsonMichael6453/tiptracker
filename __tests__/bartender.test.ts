@@ -92,7 +92,7 @@ describe("bartender tip-out default", () => {
     expect(other?.posture).toBe("both");
     expect(other?.tipOutDefaults).toEqual([]);
     const fresh = createDraft({ ...profile, id: profileId, lastRoleId: other!.id }, roles, "2026-11-20");
-    expect(fresh.wageText).toBe("");
+    expect(fresh.wageText).toBe("15"); // the profile wage, prefilled per the spec
     expect(fresh.tipOutOpen).toBe(true);
     expect(fresh.tipShareOpen).toBe(true);
     expect(fresh.tipOutLines[0]?.percentText).toBe("");
@@ -113,7 +113,7 @@ describe("bartender tip-out default", () => {
     const saved = (await listRoles(db, profileId)).find((item) => item.name === "Other")!;
     const again = createDraft({ ...profile, id: profileId, lastRoleId: saved.id }, [saved], "2026-11-20");
     expect(again.tipOutLines[0]?.percentText).toBe("5");
-    expect(again.wageText).toBe("");
+    expect(again.wageText).toBe("15");
   });
 
   test("busser and host only receive tip-out until that role is edited", async () => {
