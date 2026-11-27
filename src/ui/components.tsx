@@ -19,7 +19,11 @@ import { TipJar } from "./TipJar";
 import { Text, TextInput } from "./text";
 import { useTheme } from "./theme";
 
-type ScreenScroller = { scrollToEnd: (options?: { animated?: boolean }) => void };
+type ScreenScroller = {
+  scrollTo: (options: { x?: number; y?: number; animated?: boolean }) => void;
+  scrollToEnd: (options?: { animated?: boolean }) => void;
+  getScrollY: () => number;
+};
 const ScreenScrollContext = createContext<RefObject<ScreenScroller | null> | null>(null);
 
 export function useScreenScroll() {
@@ -41,6 +45,7 @@ export function Screen({
 }) {
   const { appearance } = useTheme();
   const scroller = useRef<ScreenScroller | null>(null);
+  const scrollY = useRef(0);
   const motion = useBackgroundMotion();
   const animate = shouldAnimateBackground({
     style: appearance.style,
@@ -51,8 +56,18 @@ export function Screen({
   const body = scroll ? (
     <ScrollView
       ref={(node) => {
-        scroller.current = node;
+        scroller.current = node
+          ? {
+              scrollTo: (options) => node.scrollTo(options),
+              scrollToEnd: (options) => node.scrollToEnd(options),
+              getScrollY: () => scrollY.current,
+            }
+          : null;
       }}
+      onScroll={(event) => {
+        scrollY.current = event.nativeEvent.contentOffset.y;
+      }}
+      scrollEventThrottle={16}
       contentContainerStyle={styles.scroll}
       keyboardShouldPersistTaps="handled"
       style={styles.fill}

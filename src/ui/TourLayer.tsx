@@ -5,6 +5,7 @@ import {
   APPEARANCE_TOUR_PAIRS,
   appearanceTourIndex,
   appearanceTourLook,
+  clampTourRect,
   REPLAY_TOUR_LABEL,
 } from "../welcome/appearanceTour";
 import { TOUR_STEPS, stepAfter, tourControls, type TourAction } from "../welcome/tour";
@@ -123,6 +124,13 @@ export function TourProvider({ children }: { children: ReactNode }) {
     };
   }, [previewing, reduceMotion, setTourLook]);
 
+  useEffect(() => {
+    if (!running || !previewing) return;
+    poke();
+    const timers = [80, 300, 800].map((delay) => setTimeout(poke, delay));
+    return () => timers.forEach(clearTimeout);
+  }, [running, previewing, previewIndex, poke]);
+
   const value = useMemo(
     () => ({ running, stepId: running ? step.id : null, target: running ? step.target : null, start, report, listen }),
     [running, step.id, step.target, start, report, listen],
@@ -133,7 +141,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
       {children}
       {running && step.id !== "stub-demo" ? (
         <CoachMark
-          rect={step.id === "appearance" ? undefined : rects[step.target]}
+          rect={rects[step.target]}
           step={step}
           index={index}
           previewIndex={previewing ? previewIndex : null}
@@ -189,23 +197,13 @@ function CoachMark({
   const { width: screenW, height: screenH } = useWindowDimensions();
   const controls = tourControls(index, TOUR_STEPS.length);
   const preview = step.id === "appearance";
-  const pad = 8;
-  const hole = !preview && rect
-    ? {
-        x: Math.max(0, rect.x - pad),
-        y: Math.max(0, rect.y - pad),
-        w: rect.width + pad * 2,
-        h: rect.height + pad * 2,
-      }
-    : null;
+  const hole = rect ? clampTourRect(rect, screenW, screenH) : null;
   const captionW = Math.min(340, screenW - 24);
-  const captionH = preview ? 420 : controls.getStarted ? 250 : 200;
-  const captionTop = preview
-    ? { top: Math.max(16, Math.min(72, screenH - captionH - 16)), left: 12, pointUp: false, arrow: 24 }
-    : hole
-      ? placeCaption(hole, screenW, screenH, captionW, captionH)
-      : { top: Math.max(8, screenH - captionH - 12), left: 12, pointUp: false, arrow: 24 };
-  const dim = preview ? "rgba(16, 18, 14, 0.28)" : "rgba(16, 18, 14, 0.62)";
+  const captionH = preview && (previewIndex != null || reduceMotion) ? 280 : controls.getStarted ? 250 : 200;
+  const captionTop = hole
+    ? placeCaption(hole, screenW, screenH, captionW, captionH)
+    : { top: Math.max(8, screenH - captionH - 12), left: 12, pointUp: false, arrow: 24 };
+  const dim = "rgba(16, 18, 14, 0.62)";
   const pair = previewIndex == null ? null : APPEARANCE_TOUR_PAIRS[previewIndex];
 
   return (

@@ -1,3 +1,5 @@
+import { APPEARANCE_STEP_COPY } from "./appearanceTour";
+
 export type TourStep = {
   id: string;
   target: string;
@@ -52,10 +54,10 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     id: "appearance",
-    target: "appearance-preview",
-    href: "/(tabs)",
-    title: "Appearance",
-    body: "Here's how fonts and colors can look. Pick yours anytime in Settings.",
+    target: "appearance",
+    href: "/(tabs)/settings",
+    title: APPEARANCE_STEP_COPY.title,
+    body: APPEARANCE_STEP_COPY.body,
   },
 ];
 

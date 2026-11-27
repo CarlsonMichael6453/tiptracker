@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Platform, Pressable, View } from "react-native";
 import Constants from "expo-constants";
 import { formatClock, formatHoursPhrase, formatMoneyInput } from "../../src/calc/format";
@@ -26,12 +26,23 @@ import { defaultAppearance } from "../../src/ui/appearance";
 import { Button, Card, ErrorList, Field, Muted, Screen, Title, useScreenScroll, WeekStartPicker } from "../../src/ui/components";
 import { useWorkingProfile } from "../../src/ui/TourDemo";
 import { TourAnchor, useTour } from "../../src/ui/TourLayer";
-import { REPLAY_TOUR_LABEL } from "../../src/welcome/appearanceTour";
+import {
+  APPEARANCE_TOUR_FOCUS_Y,
+  appearanceTourScrollAnimated,
+  REPLAY_TOUR_LABEL,
+  scrollYToWindowTarget,
+} from "../../src/welcome/appearanceTour";
 import { TOUR_GUEST_ID } from "../../src/welcome/tourDemo";
 import { useTheme } from "../../src/ui/theme";
+import { useBackgroundMotion } from "../../src/ui/useBackgroundMotion";
 import { Text } from "../../src/ui/text";
 
+type Measurable = {
+  measureInWindow: (callback: (x: number, y: number, width: number, height: number) => void) => void;
+};
+
 export default function Settings() {
+
   const { db, profiles, reload, setActive, saveProfileAppearance, saveTipJar } = useApp();
   const activeProfile = useWorkingProfile();
   const { palette } = useTheme();
@@ -52,12 +63,43 @@ export default function Settings() {
   const version = Constants.expoConfig?.version ?? "1.0.0";
   const scroll = useScreenScroll();
   const { target: tourTarget } = useTour();
+  const { reduceMotion } = useBackgroundMotion();
+  const fontsColorsRef = useRef<Measurable | null>(null);
+  const savedScrollY = useRef<number | null>(null);
+  const placeFocus = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     if (tourTarget !== "appearance") return;
-    const timer = setTimeout(() => scroll?.current?.scrollToEnd({ animated: true }), 60);
-    return () => clearTimeout(timer);
-  }, [tourTarget, scroll]);
+    const scroller = scroll?.current;
+    if (savedScrollY.current == null) {
+      savedScrollY.current = scroller?.getScrollY?.() ?? 0;
+    }
+    const animated = appearanceTourScrollAnimated(reduceMotion);
+    const place = () => {
+      const focus = fontsColorsRef.current;
+      const current = scroll?.current;
+      if (!focus || !current?.getScrollY) return;
+      focus.measureInWindow((_x, y, _w, h) => {
+        if (h <= 0) return;
+        const currentY = current.getScrollY();
+        const nextY = scrollYToWindowTarget(currentY, y, APPEARANCE_TOUR_FOCUS_Y);
+        if (Math.abs(nextY - currentY) > 2) {
+          current.scrollTo({ y: nextY, animated });
+        }
+      });
+    };
+    placeFocus.current = place;
+    const timers = [60, 280, 700, 1200].map((delay) => setTimeout(place, delay));
+    return () => {
+      placeFocus.current = () => undefined;
+      timers.forEach(clearTimeout);
+      const y = savedScrollY.current;
+      savedScrollY.current = null;
+      if (y != null) {
+        scroll?.current?.scrollTo({ y, animated: appearanceTourScrollAnimated(reduceMotion) });
+      }
+    };
+  }, [tourTarget, scroll, reduceMotion]);
 
   useEffect(() => {
     if (!activeProfile) return;
@@ -342,7 +384,6 @@ export default function Settings() {
         <Button label="Add another profile" kind="secondary" onPress={() => router.push("/profile/new")} />
       </Card>
 
-      <TourAnchor id="appearance">
       <Card>
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>Appearance</Text>
         <Muted>Saved on this profile. Every pattern is on this screen. Pick one, then change its colors.</Muted>
@@ -350,12 +391,15 @@ export default function Settings() {
           value={activeProfile.appearance ?? defaultAppearance()}
           onChange={(next) => void saveProfileAppearance(next)}
         />
-        <AppearanceType
-          value={activeProfile.appearance ?? defaultAppearance()}
-          onChange={(next) => void saveProfileAppearance(next)}
-        />
+        <TourAnchor id="appearance">
+          <View ref={fontsColorsRef as never} collapsable={false} onLayout={() => placeFocus.current()}>
+            <AppearanceType
+              value={activeProfile.appearance ?? defaultAppearance()}
+              onChange={(next) => void saveProfileAppearance(next)}
+            />
+          </View>
+        </TourAnchor>
       </Card>
-      </TourAnchor>
 
       <Card>
         <Text style={{ color: palette.text, fontSize: 18, fontWeight: "700" }}>About</Text>
