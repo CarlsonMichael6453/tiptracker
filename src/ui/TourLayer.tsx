@@ -197,12 +197,14 @@ function CoachMark({
   const { width: screenW, height: screenH } = useWindowDimensions();
   const controls = tourControls(index, TOUR_STEPS.length);
   const preview = step.id === "appearance";
-  const hole = rect ? clampTourRect(rect, screenW, screenH) : null;
+  const hole = rect ? clampTourRect(rect, screenW, screenH - (step.id === "appearance" ? 64 : 0)) : null;
   const captionW = Math.min(340, screenW - 24);
   const captionH = preview && (previewIndex != null || reduceMotion) ? 280 : controls.getStarted ? 250 : 200;
-  const captionTop = hole
-    ? placeCaption(hole, screenW, screenH, captionW, captionH)
-    : { top: Math.max(8, screenH - captionH - 12), left: 12, pointUp: false, arrow: 24 };
+  const captionTop = preview
+    ? { top: 16, left: 12, pointUp: false, arrow: Math.max(16, captionW / 2 - 9) }
+    : hole
+      ? placeCaption(hole, screenW, screenH, captionW, captionH)
+      : { top: Math.max(8, screenH - captionH - 12), left: 12, pointUp: false, arrow: 24 };
   const dim = "rgba(16, 18, 14, 0.62)";
   const pair = previewIndex == null ? null : APPEARANCE_TOUR_PAIRS[previewIndex];
 
