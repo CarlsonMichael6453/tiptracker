@@ -184,6 +184,7 @@ export function Field({
       <TextInput
         value={value}
         onChangeText={onChangeText}
+        accessibilityLabel={label}
         placeholder={placeholder}
         placeholderTextColor={palette.faint}
         keyboardType={keyboard}
